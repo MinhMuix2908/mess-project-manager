@@ -18,47 +18,15 @@
 </p>
 <br>
 
-##  Table of Contents
-
-- [ Overview](#-overview)
-- [ Features](#-features)
-- [ Project Structure](#-project-structure)
-  - [ Project Index](#-project-index)
-- [ Getting Started](#-getting-started)
-  - [ Prerequisites](#-prerequisites)
-  - [ Installation](#-installation)
-  - [ Usage](#-usage)
-- [ Project Roadmap](#-project-roadmap)
-- [ Contributing](#-contributing)
-- [ License](#-license)
-
----
 
 ##  Overview
 
 <code>❯ REPLACE-ME</code>
 
----
 
 ##  Features
 
 <code>❯ Switch between folders easily</code>
-
----
-
-##  Project Structure
-
-```sh
-└── mess-project-manager/
-    ├── LICENSE.md
-    ├── README.md
-    ├── package.json
-    ├── src
-    │   ├── ProjectProvider.ts
-    │   ├── extension.ts
-    │   └── types.ts
-    └── tsconfig.json
-```
 
 ---
 ##  Getting Started
