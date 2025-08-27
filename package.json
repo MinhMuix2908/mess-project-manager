@@ -115,6 +115,61 @@
         "command": "messProjectManager.clearSearch",
         "title": "Clear Search",
         "icon": "$(clear-all)"
+      },
+      {
+        "command": "messProjectManager.refreshGitProjects",
+        "title": "Refresh Git Projects",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "messProjectManager.cloneRepository",
+        "title": "Clone Repository",
+        "icon": "$(repo-clone)"
+      },
+      {
+        "command": "messProjectManager.pullRepository",
+        "title": "Git Pull",
+        "icon": "$(arrow-down)"
+      },
+      {
+        "command": "messProjectManager.showGitStatus",
+        "title": "Show Git Status",
+        "icon": "$(git-branch)"
+      },
+      {
+        "command": "messProjectManager.openTerminalMenu",
+        "title": "Open Terminal Menu",
+        "icon": "$(terminal)"
+      },
+      {
+        "command": "messProjectManager.openIntegratedTerminal",
+        "title": "Open Integrated Terminal",
+        "icon": "$(terminal-powershell)"
+      },
+      {
+        "command": "messProjectManager.openCommandPrompt",
+        "title": "Open Command Prompt",
+        "icon": "$(terminal-cmd)"
+      },
+      {
+        "command": "messProjectManager.openCommandPromptAdmin",
+        "title": "Open Command Prompt (Admin)",
+        "icon": "$(shield)"
+      },
+      {
+        "command": "messProjectManager.openPowerShell",
+        "title": "Open PowerShell",
+        "icon": "$(terminal-powershell)"
+      },
+      {
+        "command": "messProjectManager.openPowerShellAdmin",
+        "title": "Open PowerShell (Admin)",
+        "icon": "$(shield)"
+      },
+      {
+        "command": "messProjectManager.openGitBash",
+        "title": "Open Git Bash",
+        "icon": "$(terminal-bash)"
       }
     ],
     "menus": {
@@ -158,6 +213,16 @@
           "command": "messProjectManager.removeCategory",
           "when": "view == messProjectManagerCategories",
           "group": "navigation@8"
+        },
+        {
+          "command": "messProjectManager.refreshGitProjects",
+          "when": "view == messProjectManagerGit",
+          "group": "navigation@1"
+        },
+        {
+          "command": "messProjectManager.cloneRepository",
+          "when": "view == messProjectManagerGit",
+          "group": "navigation@2"
         }
       ],
       "view/item/context": [
@@ -175,6 +240,11 @@
           "command": "messProjectManager.openProjectCurrentWindow",
           "when": "(view == messProjectManagerTreeView || view == messProjectManagerCategories) && viewItem == projectItem",
           "group": "inline@3"
+        },
+        {
+          "command": "messProjectManager.openIntegratedTerminal",
+          "when": "(view == messProjectManagerTreeView || view == messProjectManagerCategories) && viewItem == projectItem",
+          "group": "inline@4"
         },
         {
           "command": "messProjectManager.openFileExplorerWindow",
@@ -200,6 +270,56 @@
           "command": "messProjectManager.assignCategory",
           "when": "view == messProjectManagerCategories && viewItem == projectItem",
           "group": "2_organize@2"
+        },
+        {
+          "command": "messProjectManager.pullRepository",
+          "when": "view == messProjectManagerGit && viewItem == projectItem",
+          "group": "inline@1"
+        },
+        {
+          "command": "messProjectManager.showGitStatus",
+          "when": "view == messProjectManagerGit && viewItem == projectItem",
+          "group": "inline@2"
+        },
+        {
+          "command": "messProjectManager.openFileExplorerWindow",
+          "when": "view == messProjectManagerGit && viewItem == projectItem",
+          "group": "inline@3"
+        },
+        {
+          "command": "messProjectManager.openIntegratedTerminal",
+          "when": "view == messProjectManagerGit && viewItem == projectItem",
+          "group": "inline@4"
+        },
+        {
+          "command": "messProjectManager.pullRepository",
+          "when": "view == messProjectManagerGit && viewItem == projectItem",
+          "group": "3_git@1"
+        },
+        {
+          "command": "messProjectManager.showGitStatus",
+          "when": "view == messProjectManagerGit && viewItem == projectItem",
+          "group": "3_git@2"
+        },
+        {
+          "command": "messProjectManager.openProjectNewWindow",
+          "when": "view == messProjectManagerGit && viewItem == projectItem",
+          "group": "1_open@1"
+        },
+        {
+          "command": "messProjectManager.openProjectCurrentWindow",
+          "when": "view == messProjectManagerGit && viewItem == projectItem",
+          "group": "1_open@2"
+        },
+        {
+          "command": "messProjectManager.openTerminalMenu",
+          "when": "(view == messProjectManagerTreeView || view == messProjectManagerCategories || view == messProjectManagerGit) && viewItem == projectItem",
+          "group": "4_terminal@1"
+        },
+        {
+          "command": "messProjectManager.openIntegratedTerminal",
+          "when": "(view == messProjectManagerTreeView || view == messProjectManagerCategories || view == messProjectManagerGit) && viewItem == projectItem",
+          "group": "4_terminal@2"
         }
       ]
     }

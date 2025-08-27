@@ -2,7 +2,8 @@ import * as vscode from "vscode";
 import * as path from "path";
 import * as fs from "fs";
 import { ProjectProvider, ProjectItem } from "./ProjectProvider";
-import { GitProjectProvider } from "./GitProjectProvider";
+import { GitProjectProvider, GitProjectItem } from "./GitProjectProvider";
+import { TerminalProvider } from "./TerminalProvider";
 
 export async function activate(context: vscode.ExtensionContext) {
   const storagePath = context.globalStorageUri.fsPath;
@@ -124,7 +125,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // 👁️ Toggle Show Inactive Projects Command
   const toggleShowInactiveCommand = vscode.commands.registerCommand("messProjectManager.toggleShowInactive", () => {
-    const wasShowing = categorizedProvider.getShowInactiveProjects();
+    // const wasShowing = categorizedProvider.getShowInactiveProjects();
     allProjectsProvider.toggleShowInactiveProjects();
     categorizedProvider.toggleShowInactiveProjects();
     gitProvider.toggleShowInactiveProjects();
@@ -268,6 +269,132 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.window.showInformationMessage("🔍 Search filter cleared");
   });
 
+  // 🔄 Refresh Git Projects Command
+  const refreshGitProjectsCommand = vscode.commands.registerCommand("messProjectManager.refreshGitProjects", () => {
+    gitProvider.refresh();
+    vscode.window.showInformationMessage("🔄 Git projects refreshed");
+  });
+
+  // 📥 Clone Repository Command
+  const cloneRepositoryCommand = vscode.commands.registerCommand("messProjectManager.cloneRepository", async () => {
+    await gitProvider.cloneRepository();
+  });
+
+  // ⬇️ Git Pull Command
+  const pullRepositoryCommand = vscode.commands.registerCommand("messProjectManager.pullRepository", async (projectItem: GitProjectItem) => {
+    if (projectItem && projectItem instanceof GitProjectItem) {
+      await gitProvider.pullRepository(projectItem);
+    } else {
+      vscode.window.showErrorMessage("⚠️ Please select a Git repository to pull from");
+    }
+  });
+
+  // 📊 Show Git Status Command
+  const showGitStatusCommand = vscode.commands.registerCommand("messProjectManager.showGitStatus", async (projectItem: GitProjectItem) => {
+    if (projectItem && projectItem instanceof GitProjectItem) {
+      await gitProvider.showGitStatus(projectItem);
+    } else {
+      vscode.window.showErrorMessage("⚠️ Please select a Git repository to show status for");
+    }
+  });
+
+  // Terminal integration commands
+  const terminalProvider = TerminalProvider.getInstance();
+
+  // 🖥️ Terminal Menu Command
+  const openTerminalMenuCommand = vscode.commands.registerCommand("messProjectManager.openTerminalMenu", async (projectItem: ProjectItem) => {
+    const projectPath = projectItem.getFullPath();
+    if (projectPath) {
+      await terminalProvider.showTerminalSelectionMenu(projectPath, projectItem.label);
+    } else {
+      vscode.window.showErrorMessage("⚠️ No path available for this project");
+    }
+  });
+
+  // 🖥️ Integrated Terminal Command
+  const openIntegratedTerminalCommand = vscode.commands.registerCommand("messProjectManager.openIntegratedTerminal", async (projectItem: ProjectItem) => {
+    const projectPath = projectItem.getFullPath();
+    if (projectPath) {
+      await terminalProvider.openIntegratedTerminal(projectPath, projectItem.label);
+    } else {
+      vscode.window.showErrorMessage("⚠️ No path available for this project");
+    }
+  });
+
+  // 🔷 Command Prompt Command
+  const openCommandPromptCommand = vscode.commands.registerCommand("messProjectManager.openCommandPrompt", async (projectItem: ProjectItem) => {
+    const projectPath = projectItem.getFullPath();
+    if (projectPath) {
+      await terminalProvider.openSpecificTerminal({
+        type: 'cmd',
+        workingDirectory: projectPath,
+        projectName: projectItem.label,
+        admin: false
+      });
+    } else {
+      vscode.window.showErrorMessage("⚠️ No path available for this project");
+    }
+  });
+
+  // 🔷 Command Prompt (Admin) Command
+  const openCommandPromptAdminCommand = vscode.commands.registerCommand("messProjectManager.openCommandPromptAdmin", async (projectItem: ProjectItem) => {
+    const projectPath = projectItem.getFullPath();
+    if (projectPath) {
+      await terminalProvider.openSpecificTerminal({
+        type: 'cmd',
+        workingDirectory: projectPath,
+        projectName: projectItem.label,
+        admin: true
+      });
+    } else {
+      vscode.window.showErrorMessage("⚠️ No path available for this project");
+    }
+  });
+
+  // 💙 PowerShell Command
+  const openPowerShellCommand = vscode.commands.registerCommand("messProjectManager.openPowerShell", async (projectItem: ProjectItem) => {
+    const projectPath = projectItem.getFullPath();
+    if (projectPath) {
+      await terminalProvider.openSpecificTerminal({
+        type: 'powershell',
+        workingDirectory: projectPath,
+        projectName: projectItem.label,
+        admin: false
+      });
+    } else {
+      vscode.window.showErrorMessage("⚠️ No path available for this project");
+    }
+  });
+
+  // 💙 PowerShell (Admin) Command
+  const openPowerShellAdminCommand = vscode.commands.registerCommand("messProjectManager.openPowerShellAdmin", async (projectItem: ProjectItem) => {
+    const projectPath = projectItem.getFullPath();
+    if (projectPath) {
+      await terminalProvider.openSpecificTerminal({
+        type: 'powershell',
+        workingDirectory: projectPath,
+        projectName: projectItem.label,
+        admin: true
+      });
+    } else {
+      vscode.window.showErrorMessage("⚠️ No path available for this project");
+    }
+  });
+
+  // 🟢 Git Bash Command
+  const openGitBashCommand = vscode.commands.registerCommand("messProjectManager.openGitBash", async (projectItem: ProjectItem) => {
+    const projectPath = projectItem.getFullPath();
+    if (projectPath) {
+      await terminalProvider.openSpecificTerminal({
+        type: 'git-bash',
+        workingDirectory: projectPath,
+        projectName: projectItem.label
+      });
+    } else {
+      vscode.window.showErrorMessage("⚠️ No path available for this project");
+    }
+  });
+
   // Register all commands to context
   context.subscriptions.push(
     saveCurrentLocationCommand,
@@ -284,6 +411,18 @@ export async function activate(context: vscode.ExtensionContext) {
     toggleFavoriteCommand,
     searchProjectsCommand,
     clearSearchCommand,
+    refreshGitProjectsCommand,
+    cloneRepositoryCommand,
+    pullRepositoryCommand,
+    showGitStatusCommand,
+    // Terminal commands
+    openTerminalMenuCommand,
+    openIntegratedTerminalCommand,
+    openCommandPromptCommand,
+    openCommandPromptAdminCommand,
+    openPowerShellCommand,
+    openPowerShellAdminCommand,
+    openGitBashCommand,
   );
 
   // 🔥 Watch file thay đổi -> refresh tree
