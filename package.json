@@ -25,11 +25,24 @@
         }
       }
     },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "messProjectManager",
+          "title": "Mess Project Manager",
+          "icon": "$(project)"
+        }
+      ]
+    },
     "views": {
-      "explorer": [
+      "messProjectManager": [
         {
           "id": "messProjectManagerTreeView",
-          "name": "Mess Project Manager"
+          "name": "All projects"
+        },
+        {
+          "id": "messProjectManagerGoing",
+          "name": "New idea"
         }
       ]
     },
