@@ -18,8 +18,16 @@ export async function activate(context: vscode.ExtensionContext) {
   const allProjectsProvider = new ProjectProvider(context, "messProjectManagerTreeView", false);
   const categorizedProvider = new ProjectProvider(context, "messProjectManagerCategories", true);
 
-  vscode.window.registerTreeDataProvider("messProjectManagerTreeView", allProjectsProvider);
-  vscode.window.registerTreeDataProvider("messProjectManagerCategories", categorizedProvider);
+  // Register tree data providers with drag and drop support
+  vscode.window.createTreeView("messProjectManagerTreeView", {
+    treeDataProvider: allProjectsProvider,
+    dragAndDropController: allProjectsProvider
+  });
+  
+  vscode.window.createTreeView("messProjectManagerCategories", {
+    treeDataProvider: categorizedProvider,
+    dragAndDropController: categorizedProvider
+  });
 
   // Register all commands
   const saveCurrentLocationCommand = vscode.commands.registerCommand("messProjectManager.saveCurrentLocation", async () => {

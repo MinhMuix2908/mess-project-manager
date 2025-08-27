@@ -31,6 +31,8 @@ export class ProjectItem extends vscode.TreeItem {
       this.iconPath = new vscode.ThemeIcon("folder", new vscode.ThemeColor("icon.foreground"));
     } else {
       this.contextValue = "projectItem";
+      // Make project items draggable
+      this.resourceUri = this.fullPath ? vscode.Uri.file(this.fullPath) : undefined;
     }
     
     this.tooltip = this.fullPath || this.label;
@@ -76,11 +78,15 @@ export class ProjectItem extends vscode.TreeItem {
   }
 }
 
-export class ProjectProvider implements vscode.TreeDataProvider<ProjectItem> {
+export class ProjectProvider implements vscode.TreeDataProvider<ProjectItem>, vscode.TreeDragAndDropController<ProjectItem> {
   private _onDidChangeTreeData: vscode.EventEmitter<ProjectItem | undefined | void> =
     new vscode.EventEmitter<ProjectItem | undefined | void>();
   readonly onDidChangeTreeData: vscode.Event<ProjectItem | undefined | void> =
     this._onDidChangeTreeData.event;
+
+  // Drag and drop support
+  public readonly dragMimeTypes = ['application/vnd.code.tree.messProjectManager'];
+  public readonly dropMimeTypes = ['application/vnd.code.tree.messProjectManager'];
 
   private projects: ProjectEntry[] = [];
   private categories: ProjectCategory[] = [];
@@ -313,6 +319,104 @@ export class ProjectProvider implements vscode.TreeDataProvider<ProjectItem> {
 
     const iconName = iconMap[projectType] || "folder";
     return new vscode.ThemeIcon(iconName, new vscode.ThemeColor("icon.foreground"));
+  }
+
+  // Drag and Drop Implementation
+  public async handleDrag(source: ProjectItem[], dataTransfer: vscode.DataTransfer, token: vscode.CancellationToken): Promise<void> {
+    // Only allow dragging actual projects (not categories)
+    const draggableItems = source.filter(item => !item.isCategory && item.fullPath);
+    if (draggableItems.length === 0) return;
+    
+    const dragData = draggableItems.map(item => ({
+      label: item.label,
+      path: item.fullPath,
+      category: item.category,
+      favorite: item.favorite,
+      active: item.active
+    }));
+    
+    dataTransfer.set('application/vnd.code.tree.messProjectManager', new vscode.DataTransferItem(JSON.stringify(dragData)));
+  }
+
+  public async handleDrop(target: ProjectItem | undefined, dataTransfer: vscode.DataTransfer, token: vscode.CancellationToken): Promise<void> {
+    const transferItem = dataTransfer.get('application/vnd.code.tree.messProjectManager');
+    if (!transferItem) return;
+
+    let dragData: any[];
+    try {
+      dragData = JSON.parse(transferItem.value as string);
+    } catch (error) {
+      console.error('Failed to parse drag data:', error);
+      return;
+    }
+
+    // Handle different drop scenarios
+    if (!target) {
+      // Dropped on empty space - move to end of list
+      this.moveProjectsToEnd(dragData);
+    } else if (target.isCategory) {
+      // Dropped on a category - assign to that category
+      this.assignProjectsToCategory(dragData, target.category);
+    } else {
+      // Dropped on another project - reorder
+      this.reorderProjects(dragData, target);
+    }
+  }
+
+  private moveProjectsToEnd(draggedProjects: any[]): void {
+    for (const draggedProject of draggedProjects) {
+      const projectIndex = this.projects.findIndex(p => p.path === draggedProject.path);
+      if (projectIndex !== -1) {
+        const project = this.projects.splice(projectIndex, 1)[0];
+        this.projects.push(project);
+      }
+    }
+    this.saveProjects();
+    this.refresh();
+  }
+
+  private assignProjectsToCategory(draggedProjects: any[], categoryId: string | undefined): void {
+    for (const draggedProject of draggedProjects) {
+      const project = this.projects.find(p => p.path === draggedProject.path);
+      if (project) {
+        project.category = categoryId;
+      }
+    }
+    this.saveProjects();
+    this.refresh();
+    
+    const categoryName = categoryId 
+      ? this.categories.find(c => c.id === categoryId)?.name || categoryId
+      : 'Uncategorized';
+    
+    vscode.window.showInformationMessage(
+      `✅ ${draggedProjects.length} project(s) moved to ${categoryName}`
+    );
+  }
+
+  private reorderProjects(draggedProjects: any[], targetProject: ProjectItem): void {
+    const targetIndex = this.projects.findIndex(p => p.path === targetProject.fullPath);
+    if (targetIndex === -1) return;
+
+    // Remove dragged projects from their current positions
+    const movedProjects: ProjectEntry[] = [];
+    for (const draggedProject of draggedProjects) {
+      const projectIndex = this.projects.findIndex(p => p.path === draggedProject.path);
+      if (projectIndex !== -1) {
+        movedProjects.push(this.projects.splice(projectIndex, 1)[0]);
+      }
+    }
+
+    // Insert at target position
+    const newTargetIndex = this.projects.findIndex(p => p.path === targetProject.fullPath);
+    this.projects.splice(newTargetIndex, 0, ...movedProjects);
+
+    this.saveProjects();
+    this.refresh();
+    
+    // vscode.window.showInformationMessage(
+    //   `✅ Reordered ${draggedProjects.length} project(s)`
+    // );
   }
 
   private saveProjects(): void {
