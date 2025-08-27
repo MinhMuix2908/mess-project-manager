@@ -94,7 +94,7 @@ export class ProjectProvider implements vscode.TreeDataProvider<ProjectItem>, vs
   private searchFilter: string = "";
 
   constructor(
-    private context: vscode.ExtensionContext,
+    protected context: vscode.ExtensionContext,
     private viewId: string = "messProjectManagerTreeView",
     private showCategories: boolean = true
   ) {
@@ -181,7 +181,7 @@ export class ProjectProvider implements vscode.TreeDataProvider<ProjectItem>, vs
     this.refresh();
   }
 
-  private detectProjectType(projectPath: string): string {
+  protected detectProjectType(projectPath: string): string {
     if (!fs.existsSync(projectPath)) {
       return "folder";
     }
@@ -291,7 +291,7 @@ export class ProjectProvider implements vscode.TreeDataProvider<ProjectItem>, vs
     return "folder";
   }
 
-  private getProjectIcon(projectType: string, isFavorite: boolean = false): vscode.ThemeIcon | { light: vscode.Uri; dark: vscode.Uri } {
+  protected getProjectIcon(projectType: string, isFavorite: boolean = false): vscode.ThemeIcon | { light: vscode.Uri; dark: vscode.Uri } {
     if (isFavorite) {
       return new vscode.ThemeIcon("star");
     }

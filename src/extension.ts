@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import * as path from "path";
 import * as fs from "fs";
 import { ProjectProvider, ProjectItem } from "./ProjectProvider";
+import { GitProjectProvider } from "./GitProjectProvider";
 
 export async function activate(context: vscode.ExtensionContext) {
   const storagePath = context.globalStorageUri.fsPath;
@@ -14,9 +15,10 @@ export async function activate(context: vscode.ExtensionContext) {
     fs.writeFileSync(configFile, JSON.stringify({ projects: [] }, null, 2));
   }
 
-  // Create two providers - one with categories, one without
+  // Create three providers - regular, categorized, and git
   const allProjectsProvider = new ProjectProvider(context, "messProjectManagerTreeView", false);
   const categorizedProvider = new ProjectProvider(context, "messProjectManagerCategories", true);
+  const gitProvider = new GitProjectProvider(context);
 
   // Register tree data providers with drag and drop support
   vscode.window.createTreeView("messProjectManagerTreeView", {
@@ -27,6 +29,11 @@ export async function activate(context: vscode.ExtensionContext) {
   vscode.window.createTreeView("messProjectManagerCategories", {
     treeDataProvider: categorizedProvider,
     dragAndDropController: categorizedProvider
+  });
+  
+  vscode.window.createTreeView("messProjectManagerGit", {
+    treeDataProvider: gitProvider,
+    dragAndDropController: gitProvider
   });
 
   // Register all commands
@@ -63,11 +70,13 @@ export async function activate(context: vscode.ExtensionContext) {
 
     allProjectsProvider.refresh();
     categorizedProvider.refresh();
+    gitProvider.refresh();
   });
 
   const refreshProjectsCommand = vscode.commands.registerCommand("messProjectManager.refreshProjects", () => {
     allProjectsProvider.refresh();
     categorizedProvider.refresh();
+    gitProvider.refresh();
   });
 
   const editProjectsConfigCommand = vscode.commands.registerCommand("messProjectManager.editProjectsConfig", async () => {
@@ -118,6 +127,7 @@ export async function activate(context: vscode.ExtensionContext) {
     const wasShowing = categorizedProvider.getShowInactiveProjects();
     allProjectsProvider.toggleShowInactiveProjects();
     categorizedProvider.toggleShowInactiveProjects();
+    gitProvider.toggleShowInactiveProjects();
     const isNowShowing = categorizedProvider.getShowInactiveProjects();
     
     // console.log(`Toggle inactive projects: was ${wasShowing}, now ${isNowShowing}`);
@@ -240,6 +250,7 @@ export async function activate(context: vscode.ExtensionContext) {
     if (searchTerm !== undefined) {
       allProjectsProvider.setSearchFilter(searchTerm);
       categorizedProvider.setSearchFilter(searchTerm);
+      gitProvider.setSearchFilter(searchTerm);
       
       if (searchTerm) {
         vscode.window.showInformationMessage(`🔍 Filtering projects: "${searchTerm}"`);
@@ -253,6 +264,7 @@ export async function activate(context: vscode.ExtensionContext) {
   const clearSearchCommand = vscode.commands.registerCommand("messProjectManager.clearSearch", () => {
     allProjectsProvider.clearSearchFilter();
     categorizedProvider.clearSearchFilter();
+    gitProvider.clearSearchFilter();
     vscode.window.showInformationMessage("🔍 Search filter cleared");
   });
 
@@ -279,14 +291,17 @@ export async function activate(context: vscode.ExtensionContext) {
   watcher.onDidChange(() => {
     allProjectsProvider.refresh();
     categorizedProvider.refresh();
+    gitProvider.refresh();
   });
   watcher.onDidCreate(() => {
     allProjectsProvider.refresh();
     categorizedProvider.refresh();
+    gitProvider.refresh();
   });
   watcher.onDidDelete(() => {
     allProjectsProvider.refresh();
     categorizedProvider.refresh();
+    gitProvider.refresh();
   });
   context.subscriptions.push(watcher);
   

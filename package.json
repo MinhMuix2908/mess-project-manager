@@ -43,6 +43,10 @@
         {
           "id": "messProjectManagerCategories",
           "name": "All Projects Category "
+        },
+        {
+          "id": "messProjectManagerGit",
+          "name": "Git "
         }
       ]
     },
