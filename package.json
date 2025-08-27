@@ -68,6 +68,11 @@
         "icon": "$(eye)"
       },
       {
+        "command": "messProjectManager.openFileExplorerWindow",
+        "title": "Open this in File Explorer",
+        "icon": "$(folder-opened)"
+      },
+      {
         "command": "messProjectManager.openProjectNewWindow",
         "title": "Open in New Window",
         "icon": "$(empty-window)"
@@ -127,6 +132,11 @@
         }
       ],
       "view/item/context": [
+        {
+          "command": "messProjectManager.openFileExplorerWindow",
+          "when": "(view == messProjectManagerTreeView || view == messProjectManagerCategories) && viewItem == projectItem",
+          "group": "inline"
+        },
         {
           "command": "messProjectManager.openProjectNewWindow",
           "when": "(view == messProjectManagerTreeView || view == messProjectManagerCategories) && viewItem == projectItem",

@@ -67,18 +67,29 @@ export async function activate(context: vscode.ExtensionContext) {
     await vscode.window.showTextDocument(doc);
   });
 
-  // 🎯 New Window Command - receives ProjectItem
+
+  // File Explorer Window Command - receives ProjectItem
+  const openFileExplorerWindowCommand = vscode.commands.registerCommand("messProjectManager.openFileExplorerWindow", async (projectItem: ProjectItem) => {
+    const fullPath = projectItem.getFullPath();
+    if (fullPath) {
+      await vscode.env.openExternal(vscode.Uri.file(fullPath));
+    } else {
+      vscode.window.showWarningMessage("No path available for this item");
+    }
+  });
+  
+  // New Window Command - receives ProjectItem
   const openProjectNewWindowCommand = vscode.commands.registerCommand("messProjectManager.openProjectNewWindow", (projectItem: ProjectItem) => {
     const fullPath = projectItem.getFullPath();
     if (fullPath) {
       // console.log("Opening in new window:", projectItem.label, "at path:", fullPath);
-      vscode.commands.executeCommand("vscode.openFolder", vscode.Uri.file(fullPath), true);
+      vscode.commands.executeCommand("vscode.env.openExternal", vscode.Uri.file(fullPath), true);
     } else {
       vscode.window.showWarningMessage("No path available for this item");
     }
   });
 
-  // 🎯 Current Window Command - receives ProjectItem
+  // Current Window Command - receives ProjectItem
   const openProjectCurrentWindowCommand = vscode.commands.registerCommand("messProjectManager.openProjectCurrentWindow", (projectItem: ProjectItem) => {
     const fullPath = projectItem.getFullPath();
     if (fullPath) {
@@ -91,7 +102,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // 🔔 Click Notification Command
   const showClickNotificationCommand = vscode.commands.registerCommand("messProjectManager.showClickNotification", (projectName: string) => {
-    vscode.window.showInformationMessage(`Vui lòng ấn 2 nút bên phải thay vì click vào đây (${projectName})`);
+    vscode.window.showInformationMessage(`Please click on the function in the menu on the right. (${projectName})`);
   });
 
   // 👁️ Toggle Show Inactive Projects Command
@@ -105,8 +116,8 @@ export async function activate(context: vscode.ExtensionContext) {
     
     vscode.window.showInformationMessage(
       isNowShowing 
-        ? "👁️ Hiển thị tất cả projects (bao gồm inactive)" 
-        : "🔒 Chỉ hiển thị active projects"
+        ? "👁️ Show all projects (including inactive)" 
+        : "🔒 Show only active projects"
     );
   });
 
@@ -199,6 +210,7 @@ export async function activate(context: vscode.ExtensionContext) {
     saveCurrentLocationCommand,
     refreshProjectsCommand,
     editProjectsConfigCommand,
+    openFileExplorerWindowCommand,
     openProjectNewWindowCommand,
     openProjectCurrentWindowCommand,
     showClickNotificationCommand,
