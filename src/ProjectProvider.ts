@@ -79,6 +79,7 @@ export class ProjectProvider implements vscode.TreeDataProvider<ProjectItem> {
   private projects: ProjectEntry[] = [];
   private categories: ProjectCategory[] = [];
   private showInactiveProjects: boolean = false;
+  private searchFilter: string = "";
 
   constructor(
     private context: vscode.ExtensionContext,
@@ -154,6 +155,20 @@ export class ProjectProvider implements vscode.TreeDataProvider<ProjectItem> {
     }
   }
 
+  setSearchFilter(filter: string): void {
+    this.searchFilter = filter.toLowerCase();
+    this.refresh();
+  }
+
+  getSearchFilter(): string {
+    return this.searchFilter;
+  }
+
+  clearSearchFilter(): void {
+    this.searchFilter = "";
+    this.refresh();
+  }
+
   private saveProjects(): void {
     const filePath = path.join(this.context.globalStorageUri.fsPath, "projects.json");
     const projectsData = { projects: this.projects };
@@ -177,10 +192,23 @@ export class ProjectProvider implements vscode.TreeDataProvider<ProjectItem> {
       try {
         const raw = fs.readFileSync(filePath, "utf-8");
         const parsed = JSON.parse(raw);
-        this.projects = parsed.projects || [];
+        let projects = parsed.projects || [];
+        
+        // Filter by active status
         if (!this.showInactiveProjects){
-          this.projects = this.projects.filter(project => project.active == true)
+          projects = projects.filter((project: ProjectEntry) => project.active == true);
         }
+        
+        // Filter by search term
+        if (this.searchFilter) {
+          projects = projects.filter((project: ProjectEntry) => {
+            const nameMatch = project.label.toLowerCase().includes(this.searchFilter);
+            const pathMatch = project.path.toLowerCase().includes(this.searchFilter);
+            return nameMatch || pathMatch;
+          });
+        }
+        
+        this.projects = projects;
       } catch (e) {
         console.error("Failed to parse projects.json", e);
         this.projects = [];

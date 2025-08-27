@@ -221,6 +221,33 @@ export async function activate(context: vscode.ExtensionContext) {
     }
   });
 
+  // 🔍 Search Projects Command
+  const searchProjectsCommand = vscode.commands.registerCommand("messProjectManager.searchProjects", async () => {
+    const searchTerm = await vscode.window.showInputBox({
+      prompt: "Search projects by name or path",
+      placeHolder: "Enter search term...",
+      value: categorizedProvider.getSearchFilter()
+    });
+
+    if (searchTerm !== undefined) {
+      allProjectsProvider.setSearchFilter(searchTerm);
+      categorizedProvider.setSearchFilter(searchTerm);
+      
+      if (searchTerm) {
+        vscode.window.showInformationMessage(`🔍 Filtering projects: "${searchTerm}"`);
+      } else {
+        vscode.window.showInformationMessage("🔍 Search filter cleared");
+      }
+    }
+  });
+
+  // ❌ Clear Search Command
+  const clearSearchCommand = vscode.commands.registerCommand("messProjectManager.clearSearch", () => {
+    allProjectsProvider.clearSearchFilter();
+    categorizedProvider.clearSearchFilter();
+    vscode.window.showInformationMessage("🔍 Search filter cleared");
+  });
+
   // Register all commands to context
   context.subscriptions.push(
     saveCurrentLocationCommand,
@@ -235,6 +262,8 @@ export async function activate(context: vscode.ExtensionContext) {
     assignCategoryCommand,
     removeCategoryCommand,
     toggleFavoriteCommand,
+    searchProjectsCommand,
+    clearSearchCommand,
   );
 
   // 🔥 Watch file thay đổi -> refresh tree

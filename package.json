@@ -101,6 +101,16 @@
         "command": "messProjectManager.toggleFavorite",
         "title": "Toggle Favorite",
         "icon": "$(star)"
+      },
+      {
+        "command": "messProjectManager.searchProjects",
+        "title": "Search Projects",
+        "icon": "$(search)"
+      },
+      {
+        "command": "messProjectManager.clearSearch",
+        "title": "Clear Search",
+        "icon": "$(clear-all)"
       }
     ],
     "menus": {
@@ -121,19 +131,29 @@
           "group": "navigation@3"
         },
         {
+          "command": "messProjectManager.searchProjects",
+          "when": "view == messProjectManagerTreeView",
+          "group": "navigation@4"
+        },
+        {
+          "command": "messProjectManager.clearSearch",
+          "when": "view == messProjectManagerTreeView",
+          "group": "navigation@5"
+        },
+        {
           "command": "messProjectManager.toggleShowInactive",
           "when": "(view == messProjectManagerTreeView) && !messProjectManager.showInactiveProjects",
-          "group": "navigation@4"
+          "group": "navigation@6"
         },
         {
           "command": "messProjectManager.addCategory",
           "when": "view == messProjectManagerCategories",
-          "group": "navigation@5"
+          "group": "navigation@7"
         },
         {
           "command": "messProjectManager.removeCategory",
           "when": "view == messProjectManagerCategories",
-          "group": "navigation@6"
+          "group": "navigation@8"
         }
       ],
       "view/item/context": [
