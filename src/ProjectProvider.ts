@@ -20,7 +20,8 @@ export class ProjectItem extends vscode.TreeItem {
     public readonly active: boolean = true,
     public readonly category?: string,
     public readonly isCategory: boolean = false,
-    public readonly favorite: boolean = false
+    public readonly favorite: boolean = false,
+    public readonly projectType?: string
   ) {
     super(label, collapsibleState);
     
@@ -52,6 +53,7 @@ export class ProjectItem extends vscode.TreeItem {
       //   this.description += " ⭐";
       // }
       
+      // Use custom icon based on project type - this will be set by the provider
       this.iconPath = new vscode.ThemeIcon("folder", new vscode.ThemeColor("icon.foreground"));
     }
     
@@ -67,6 +69,10 @@ export class ProjectItem extends vscode.TreeItem {
   
   getFullPath() {
     return this.fullPath || "";
+  }
+
+  setCustomIcon(iconPath: vscode.ThemeIcon | { light: vscode.Uri; dark: vscode.Uri }) {
+    this.iconPath = iconPath;
   }
 }
 
@@ -167,6 +173,146 @@ export class ProjectProvider implements vscode.TreeDataProvider<ProjectItem> {
   clearSearchFilter(): void {
     this.searchFilter = "";
     this.refresh();
+  }
+
+  private detectProjectType(projectPath: string): string {
+    if (!fs.existsSync(projectPath)) {
+      return "folder";
+    }
+
+    // Check for specific files/folders that indicate project type
+    const files = fs.readdirSync(projectPath);
+
+    // React/Next.js projects
+    if (files.includes("package.json")) {
+      try {
+        const packageJsonPath = path.join(projectPath, "package.json");
+        const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, "utf-8"));
+        
+        // Check dependencies for React/Next.js
+        const deps = { ...packageJson.dependencies, ...packageJson.devDependencies };
+        if (deps.react || deps["@types/react"]) {
+          if (deps.next) return "react"; // Next.js uses React icon
+          return "react";
+        }
+        
+        // Vue.js
+        if (deps.vue || deps["@vue/cli-service"]) return "vue";
+        
+        // Angular
+        if (deps["@angular/core"]) return "angular";
+        
+        // Svelte
+        if (deps.svelte) return "svelte";
+        
+        // Electron
+        if (deps.electron) return "electron";
+        
+        // Express/Node.js server
+        if (deps.express || deps.koa || deps.fastify) return "nodejs";
+        
+        // General Node.js project
+        return "nodejs";
+      } catch (e) {
+        // If can't read package.json, still treat as Node.js
+        return "nodejs";
+      }
+    }
+    
+    // Python projects
+    if (files.includes("requirements.txt") || 
+        files.includes("setup.py") || 
+        files.includes("pyproject.toml") ||
+        files.includes("Pipfile") ||
+        files.some(f => f.endsWith(".py"))) {
+      return "python";
+    }
+    
+    // Java projects
+    if (files.includes("pom.xml") || 
+        files.includes("build.gradle") ||
+        files.includes("build.gradle.kts") ||
+        files.some(f => f.endsWith(".java"))) {
+      return "java";
+    }
+    
+    // C# projects
+    if (files.some(f => f.endsWith(".csproj") || f.endsWith(".sln")) ||
+        files.some(f => f.endsWith(".cs"))) {
+      return "csharp";
+    }
+    
+    // PHP projects
+    if (files.includes("composer.json") || 
+        files.some(f => f.endsWith(".php"))) {
+      return "php";
+    }
+    
+    // Ruby projects
+    if (files.includes("Gemfile") || 
+        files.some(f => f.endsWith(".rb"))) {
+      return "ruby";
+    }
+    
+    // Go projects
+    if (files.includes("go.mod") || 
+        files.some(f => f.endsWith(".go"))) {
+      return "go";
+    }
+    
+    // Flutter/Dart projects
+    if (files.includes("pubspec.yaml") || 
+        files.some(f => f.endsWith(".dart"))) {
+      return "flutter";
+    }
+    
+    // Unity projects
+    if (files.includes("ProjectSettings") && files.includes("Assets")) {
+      return "unity";
+    }
+    
+    // Docker projects
+    if (files.includes("Dockerfile") || files.includes("docker-compose.yml")) {
+      return "docker";
+    }
+    
+    // Git repositories
+    if (files.includes(".git")) {
+      return "git";
+    }
+    
+    // Default folder icon
+    return "folder";
+  }
+
+  private getProjectIcon(projectType: string, isFavorite: boolean = false): vscode.ThemeIcon | { light: vscode.Uri; dark: vscode.Uri } {
+    if (isFavorite) {
+      return new vscode.ThemeIcon("star");
+    }
+
+    // Custom SVG icons for better visual representation
+    const customIconTypes = ["react", "vue", "angular", "nodejs", "python", "java", "docker", "flutter", "go", "csharp", "php"];
+    
+    if (customIconTypes.includes(projectType)) {
+      const iconPath = path.join(this.context.extensionPath, "icons");
+      return {
+        light: vscode.Uri.file(path.join(iconPath, "light", `${projectType}.svg`)),
+        dark: vscode.Uri.file(path.join(iconPath, "dark", `${projectType}.svg`))
+      };
+    }
+
+    // Fallback to theme icons for other types
+    const iconMap: { [key: string]: string } = {
+      "svelte": "flame",
+      "ruby": "ruby",
+      "unity": "symbol-misc",
+      "git": "source-control",
+      "electron": "device-desktop",
+      "folder": "folder"
+    };
+
+    const iconName = iconMap[projectType] || "folder";
+    return new vscode.ThemeIcon(iconName, new vscode.ThemeColor("icon.foreground"));
   }
 
   private saveProjects(): void {
@@ -303,7 +449,7 @@ export class ProjectProvider implements vscode.TreeDataProvider<ProjectItem> {
         "favorites",
         true
       );
-      favoriteItem.iconPath = new vscode.ThemeIcon("star-full");
+      favoriteItem.iconPath = new vscode.ThemeIcon("star");
       result.push(favoriteItem);
     }
 
@@ -392,9 +538,15 @@ export class ProjectProvider implements vscode.TreeDataProvider<ProjectItem> {
       const category = value.__category;
       const favorite = value.__favorite || false;
       
-      // console.log(`Converting to TreeItem: ${name}, active: ${isActive}, fullPath: ${value.__fullPath}`);
+      // Detect project type for leaf nodes (actual projects)
+      let projectType = "folder";
+      if (value.__fullPath && children.length === 0) {
+        projectType = this.detectProjectType(value.__fullPath);
+      }
       
-      return new ProjectItem(
+      // console.log(`Converting to TreeItem: ${name}, active: ${isActive}, fullPath: ${value.__fullPath}, type: ${projectType}`);
+      
+      const projectItem = new ProjectItem(
         name,
         children.length > 0 ? vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None,
         value.__fullPath,
@@ -402,8 +554,17 @@ export class ProjectProvider implements vscode.TreeDataProvider<ProjectItem> {
         isActive,
         category,
         false,
-        favorite
+        favorite,
+        projectType
       );
+
+      // Set custom icon based on project type
+      if (value.__fullPath && children.length === 0) {
+        const customIcon = this.getProjectIcon(projectType, favorite);
+        projectItem.setCustomIcon(customIcon);
+      }
+      
+      return projectItem;
     });
   }
 }
