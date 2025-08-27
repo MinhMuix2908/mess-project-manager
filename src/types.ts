@@ -3,3 +3,10 @@ export interface ProjectNode {
   path: string;
   children?: ProjectNode[];
 }
+
+export interface ProjectCategory {
+  id: string;
+  name: string;
+  color?: string;
+  icon?: string;
+}

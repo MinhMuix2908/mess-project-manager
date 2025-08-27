@@ -38,11 +38,11 @@
       "messProjectManager": [
         {
           "id": "messProjectManagerTreeView",
-          "name": "All projects"
+          "name": "All Projects"
         },
         {
-          "id": "messProjectManagerGoing",
-          "name": "New idea"
+          "id": "messProjectManagerCategories",
+          "name": "All Projects Category "
         }
       ]
     },
@@ -76,6 +76,21 @@
         "command": "messProjectManager.openProjectCurrentWindow",
         "title": "Open in Current Window",
         "icon": "$(arrow-right)"
+      },
+      {
+        "command": "messProjectManager.addCategory",
+        "title": "Add Category",
+        "icon": "$(plus)"
+      },
+      {
+        "command": "messProjectManager.assignCategory",
+        "title": "Assign to Category",
+        "icon": "$(tag)"
+      },
+      {
+        "command": "messProjectManager.removeCategory",
+        "title": "Remove Category",
+        "icon": "$(trash)"
       }
     ],
     "menus": {
@@ -97,20 +112,35 @@
         },
         {
           "command": "messProjectManager.toggleShowInactive",
-          "when": "!messProjectManager.showInactiveProjects",
+          "when": "(view == messProjectManagerTreeView) && !messProjectManager.showInactiveProjects",
           "group": "navigation@4"
+        },
+        {
+          "command": "messProjectManager.addCategory",
+          "when": "view == messProjectManagerCategories",
+          "group": "navigation@5"
+        },
+        {
+          "command": "messProjectManager.removeCategory",
+          "when": "view == messProjectManagerCategories",
+          "group": "navigation@6"
         }
       ],
       "view/item/context": [
         {
           "command": "messProjectManager.openProjectNewWindow",
-          "when": "view == messProjectManagerTreeView && viewItem == projectItem",
+          "when": "(view == messProjectManagerTreeView || view == messProjectManagerCategories) && viewItem == projectItem",
           "group": "inline"
         },
         {
           "command": "messProjectManager.openProjectCurrentWindow",
-          "when": "view == messProjectManagerTreeView && viewItem == projectItem",
+          "when": "(view == messProjectManagerTreeView || view == messProjectManagerCategories) && viewItem == projectItem",
           "group": "inline"
+        },
+        {
+          "command": "messProjectManager.assignCategory",
+          "when": "view == messProjectManagerCategories && viewItem == projectItem",
+          "group": "category"
         }
       ]
     }

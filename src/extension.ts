@@ -14,9 +14,12 @@ export async function activate(context: vscode.ExtensionContext) {
     fs.writeFileSync(configFile, JSON.stringify({ projects: [] }, null, 2));
   }
 
-  const projectProvider = new ProjectProvider(context);
+  // Create two providers - one with categories, one without
+  const allProjectsProvider = new ProjectProvider(context, "messProjectManagerTreeView", false);
+  const categorizedProvider = new ProjectProvider(context, "messProjectManagerCategories", true);
 
-  vscode.window.registerTreeDataProvider("messProjectManagerTreeView", projectProvider);
+  vscode.window.registerTreeDataProvider("messProjectManagerTreeView", allProjectsProvider);
+  vscode.window.registerTreeDataProvider("messProjectManagerCategories", categorizedProvider);
 
   // Register all commands
   const saveCurrentLocationCommand = vscode.commands.registerCommand("messProjectManager.saveCurrentLocation", async () => {
@@ -50,11 +53,13 @@ export async function activate(context: vscode.ExtensionContext) {
 
     vscode.window.showInformationMessage(`✅ Đã lưu ${name} vào projects.json`);
 
-    projectProvider.refresh();
+    allProjectsProvider.refresh();
+    categorizedProvider.refresh();
   });
 
   const refreshProjectsCommand = vscode.commands.registerCommand("messProjectManager.refreshProjects", () => {
-    projectProvider.refresh();
+    allProjectsProvider.refresh();
+    categorizedProvider.refresh();
   });
 
   const editProjectsConfigCommand = vscode.commands.registerCommand("messProjectManager.editProjectsConfig", async () => {
@@ -91,9 +96,10 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // 👁️ Toggle Show Inactive Projects Command
   const toggleShowInactiveCommand = vscode.commands.registerCommand("messProjectManager.toggleShowInactive", () => {
-    const wasShowing = projectProvider.getShowInactiveProjects();
-    projectProvider.toggleShowInactiveProjects();
-    const isNowShowing = projectProvider.getShowInactiveProjects();
+    const wasShowing = categorizedProvider.getShowInactiveProjects();
+    allProjectsProvider.toggleShowInactiveProjects();
+    categorizedProvider.toggleShowInactiveProjects();
+    const isNowShowing = categorizedProvider.getShowInactiveProjects();
     
     // console.log(`Toggle inactive projects: was ${wasShowing}, now ${isNowShowing}`);
     
@@ -102,6 +108,90 @@ export async function activate(context: vscode.ExtensionContext) {
         ? "👁️ Hiển thị tất cả projects (bao gồm inactive)" 
         : "🔒 Chỉ hiển thị active projects"
     );
+  });
+
+  // 🏷️ Add Category Command
+  const addCategoryCommand = vscode.commands.registerCommand("messProjectManager.addCategory", async () => {
+    const categoryName = await vscode.window.showInputBox({
+      prompt: "Enter category name",
+      placeHolder: "e.g., Work, Personal, Learning"
+    });
+
+    if (!categoryName) return;
+
+    const categoryId = categoryName.toLowerCase().replace(/\s+/g, '-');
+    
+    const iconOptions = [
+      "briefcase", "home", "mortar-board", "code", "tools", 
+      "heart", "star", "folder", "project", "rocket"
+    ];
+    
+    const selectedIcon = await vscode.window.showQuickPick(iconOptions, {
+      placeHolder: "Select an icon for this category"
+    });
+
+    if (!selectedIcon) return;
+
+    categorizedProvider.addCategory({
+      id: categoryId,
+      name: categoryName,
+      icon: selectedIcon
+    });
+
+    vscode.window.showInformationMessage(`✅ Category "${categoryName}" added successfully!`);
+  });
+
+  // 🏷️ Assign Project to Category Command
+  const assignCategoryCommand = vscode.commands.registerCommand("messProjectManager.assignCategory", async (projectItem: any) => {
+    const categories = categorizedProvider.getCategories();
+    
+    const categoryOptions = [
+      { label: "Uncategorized", id: undefined },
+      ...categories.map(c => ({ label: c.name, id: c.id }))
+    ];
+
+    const selected = await vscode.window.showQuickPick(categoryOptions, {
+      placeHolder: "Select a category for this project"
+    });
+
+    if (selected === undefined) return;
+
+    const projectPath = projectItem.getFullPath();
+    if (projectPath) {
+      categorizedProvider.assignProjectToCategory(projectPath, selected.id);
+      allProjectsProvider.refresh(); // Also refresh the flat view
+      vscode.window.showInformationMessage(`✅ Project assigned to ${selected.label}`);
+    }
+  });
+
+  // 🗑️ Remove Category Command
+  const removeCategoryCommand = vscode.commands.registerCommand("messProjectManager.removeCategory", async () => {
+    const categories = categorizedProvider.getCategories();
+    
+    if (categories.length === 0) {
+      vscode.window.showInformationMessage("No categories to remove");
+      return;
+    }
+
+    const categoryOptions = categories.map(c => ({ label: c.name, id: c.id }));
+
+    const selected = await vscode.window.showQuickPick(categoryOptions, {
+      placeHolder: "Select a category to remove"
+    });
+
+    if (!selected) return;
+
+    const confirm = await vscode.window.showWarningMessage(
+      `Are you sure you want to remove the "${selected.label}" category? Projects in this category will become uncategorized.`,
+      "Remove",
+      "Cancel"
+    );
+
+    if (confirm === "Remove") {
+      categorizedProvider.removeCategory(selected.id);
+      allProjectsProvider.refresh(); // Also refresh the flat view
+      vscode.window.showInformationMessage(`✅ Category "${selected.label}" removed`);
+    }
   });
 
   // Register all commands to context
@@ -113,19 +203,32 @@ export async function activate(context: vscode.ExtensionContext) {
     openProjectCurrentWindowCommand,
     showClickNotificationCommand,
     toggleShowInactiveCommand,
+    addCategoryCommand,
+    assignCategoryCommand,
+    removeCategoryCommand,
   );
 
   // 🔥 Watch file thay đổi -> refresh tree
   const watcher = vscode.workspace.createFileSystemWatcher(configFile);
-  watcher.onDidChange(() => projectProvider.refresh());
-  watcher.onDidCreate(() => projectProvider.refresh());
-  watcher.onDidDelete(() => projectProvider.refresh());
+  watcher.onDidChange(() => {
+    allProjectsProvider.refresh();
+    categorizedProvider.refresh();
+  });
+  watcher.onDidCreate(() => {
+    allProjectsProvider.refresh();
+    categorizedProvider.refresh();
+  });
+  watcher.onDidDelete(() => {
+    allProjectsProvider.refresh();
+    categorizedProvider.refresh();
+  });
   context.subscriptions.push(watcher);
   
   // Watch for file saves and refresh tree
   const onSaveDisposable = vscode.workspace.onDidSaveTextDocument(doc => {
     if (doc.uri.fsPath === configFile) {
-      projectProvider.refresh();
+      allProjectsProvider.refresh();
+      categorizedProvider.refresh();
     }
   });
   
