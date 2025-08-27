@@ -1,135 +1,120 @@
-<p align="center">
-    <img src="https://raw.githubusercontent.com/PKief/vscode-material-icon-theme/ec559a9f6bfd399b82bb44393651661b08aaf7ba/icons/folder-markdown-open.svg" align="center" width="30%">
-</p>
-<p align="center"><h1 align="center">MESS-PROJECT-MANAGER</h1></p>
-<p align="center">
-	<em><code>❯ MESS-PROJECT-MANAGER build 0.0.1</code></em>
-</p>
-<p align="center">
-	<img src="https://img.shields.io/github/license/MinhMuix2908/mess-project-manager?style=default&logo=opensourceinitiative&logoColor=white&color=0080ff" alt="license">
-	<img src="https://img.shields.io/github/last-commit/MinhMuix2908/mess-project-manager?style=default&logo=git&logoColor=white&color=0080ff" alt="last-commit">
-	<img src="https://img.shields.io/github/languages/top/MinhMuix2908/mess-project-manager?style=default&color=0080ff" alt="repo-top-language">
-	<img src="https://img.shields.io/github/languages/count/MinhMuix2908/mess-project-manager?style=default&color=0080ff" alt="repo-language-count">
-</p>
-<p align="center"><!-- default option, no dependency badges. -->
-</p>
-<p align="center">
-	<!-- default option, no dependency badges. -->
-</p>
-<br>
+# Mess Project Manager
 
+A simple and efficient Visual Studio Code extension for managing and organizing your projects with a convenient TreeView interface.
 
-##  Overview
+## Features
 
-<code>❯ REPLACE-ME</code>
+- **Project Management**: Save and organize your projects in a hierarchical tree structure
+- **Quick Navigation**: Open projects in new or current VS Code windows with one click
+- **Active/Inactive Projects**: Toggle between showing all projects or just active ones
+- **Auto-save Current Location**: Quickly save your current workspace or file directory as a project
+- **Configuration Management**: Direct access to edit your projects configuration file
+- **Real-time Updates**: Automatic refresh when projects configuration changes
 
+## Installation
 
-##  Features
+1. Clone this repository
+2. Run `npm install` to install dependencies
+3. Run `npm run compile` to build the extension
+4. Press `F5` to launch a new VS Code window with the extension loaded
 
-<code>❯ Switch between folders easily</code>
+## Usage
 
----
-##  Getting Started
+### Adding Projects
 
-###  Prerequisites
+1. Open the file or workspace you want to save as a project
+2. Click the "Save Current Location" button (➕) in the Mess Project Manager view
+3. The project will be automatically saved with the folder name as the project name
 
-Before getting started with mess-project-manager, ensure your runtime environment meets the following requirements:
+### Managing Projects
 
-- **Programming Language:** TypeScript
-- **Package Manager:** Npm
+- **Open in New Window**: Click the new window icon (📋) next to a project
+- **Open in Current Window**: Click the arrow icon (➡️) next to a project
+- **Edit Configuration**: Click the edit icon (✏️) to directly modify the projects.json file
+- **Refresh**: Click the refresh icon (🔄) to reload the project list
+- **Toggle Inactive Projects**: Click the eye icon (👁️) to show/hide inactive projects
 
+### Project Configuration
 
-###  Installation
+Projects are stored in a `projects.json` file in the extension's global storage. The structure is:
 
-Install mess-project-manager using one of the following methods:
-
-**Build from source:**
-
-1. Clone the mess-project-manager repository:
-```sh
-❯ git clone https://github.com/MinhMuix2908/mess-project-manager
+```json
+{
+  "projects": [
+    {
+      "label": "Project Name",
+      "path": "/path/to/project",
+      "active": true
+    }
+  ]
+}
 ```
 
-2. Navigate to the project directory:
-```sh
-❯ cd mess-project-manager
+## Commands
+
+The extension provides the following commands:
+
+- `messProjectManager.saveCurrentLocation` - Save the current location as a project
+- `messProjectManager.editProjectsConfig` - Open the projects configuration file
+- `messProjectManager.refreshProjects` - Refresh the project tree view
+- `messProjectManager.toggleShowInactive` - Toggle visibility of inactive projects
+- `messProjectManager.openProjectNewWindow` - Open project in a new VS Code window
+- `messProjectManager.openProjectCurrentWindow` - Open project in the current window
+
+## Configuration
+
+The extension supports the following settings:
+
+- `messProjectManager.showInactiveProjects` (boolean): Whether to show inactive projects in the tree view (default: false)
+
+## Development
+
+### Prerequisites
+
+- Node.js (v20 or later)
+- VS Code (v1.90.0 or later)
+- TypeScript
+
+### Building
+
+```bash
+npm install
+npm run compile
 ```
 
-3. Install the project dependencies:
+### Testing
 
-
-**Using `npm`** &nbsp; [<img align="center" src="https://img.shields.io/badge/npm-CB3837.svg?style={badge_style}&logo=npm&logoColor=white" />](https://www.npmjs.com/)
-
-```sh
-❯ npm install
-❯ npm run compile
+```bash
+npm test
 ```
 
+### Publishing
 
-
-
-###  Usage
-Run mess-project-manager using the following command:
-**Using `npm`** &nbsp; [<img align="center" src="https://img.shields.io/badge/npm-CB3837.svg?style={badge_style}&logo=npm&logoColor=white" />](https://www.npmjs.com/)
-
-```sh
-❯ npm start
+```bash
+npm run vscode:prepublish
+vsce package
 ```
 
+## Repository
 
----
-##  Project Roadmap
+GitHub: [https://github.com/MinhMuix2908/mess-project-manager](https://github.com/MinhMuix2908/mess-project-manager)
 
-- [X] **`Task 1`**: <strike>Implement feature one.</strike>
-- [ ] **`Task 2`**: Still thinking.
+## License
 
----
+This project is licensed under the terms specified in the LICENSE.md file.
 
-##  Contributing
+## Contributing
 
-- **💬 [Join the Discussions](https://github.com/MinhMuix2908/mess-project-manager/discussions)**: Share your insights, provide feedback, or ask questions.
-- **🐛 [Report Issues](https://github.com/MinhMuix2908/mess-project-manager/issues)**: Submit bugs found or log feature requests for the `mess-project-manager` project.
-- **💡 [Submit Pull Requests](https://github.com/MinhMuix2908/mess-project-manager/blob/main/CONTRIBUTING.md)**: Review open PRs, and submit your own PRs.
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
 
-<details closed>
-<summary>Contributing Guidelines</summary>
+## Author
 
-1. **Fork the Repository**: Start by forking the project repository to your github account.
-2. **Clone Locally**: Clone the forked repository to your local machine using a git client.
-   ```sh
-   git clone https://github.com/MinhMuix2908/mess-project-manager
-   ```
-3. **Create a New Branch**: Always work on a new branch, giving it a descriptive name.
-   ```sh
-   git checkout -b new-feature-x
-   ```
-4. **Make Your Changes**: Develop and test your changes locally.
-5. **Commit Your Changes**: Commit with a clear message describing your updates.
-   ```sh
-   git commit -m 'Implemented new feature x.'
-   ```
-6. **Push to github**: Push the changes to your forked repository.
-   ```sh
-   git push origin new-feature-x
-   ```
-7. **Submit a Pull Request**: Create a PR against the original project repository. Clearly describe the changes and their motivations.
-8. **Review**: Once your PR is reviewed and approved, it will be merged into the main branch. Congratulations on your contribution!
-</details>
-
-<details closed>
-<summary>Contributor Graph</summary>
-<br>
-<p align="left">
-   <a href="https://github.com{/MinhMuix2908/mess-project-manager/}graphs/contributors">
-      <img src="https://contrib.rocks/image?repo=MinhMuix2908/mess-project-manager">
-   </a>
-</p>
-</details>
+**DaoQuangMinh**
 
 ---
 
-##  License
-
-This project is protected under the MIT License. For more details, refer to the [LICENSE](https://choosealicense.com/licenses/mit/) file.
-
----
+*Extension Version: 0.0.1*
