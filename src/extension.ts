@@ -134,7 +134,7 @@ export async function activate(context: vscode.ExtensionContext) {
     
     const iconOptions = [
       "briefcase", "home", "mortar-board", "code", "tools", 
-      "heart", "star", "folder", "project", "rocket"
+      "heart", "folder", "project", "rocket"
     ];
     
     const selectedIcon = await vscode.window.showQuickPick(iconOptions, {
@@ -205,6 +205,22 @@ export async function activate(context: vscode.ExtensionContext) {
     }
   });
 
+  // ⭐ Toggle Favorite Command
+  const toggleFavoriteCommand = vscode.commands.registerCommand("messProjectManager.toggleFavorite", async (projectItem: any) => {
+    const projectPath = projectItem.getFullPath();
+    if (projectPath) {
+      categorizedProvider.toggleProjectFavorite(projectPath);
+      allProjectsProvider.refresh(); // Also refresh the flat view
+      
+      const isFavorite = projectItem.favorite;
+      vscode.window.showInformationMessage(
+        isFavorite 
+          ? `⭐ Added "${projectItem.label}" to favorites`
+          : `Removed "${projectItem.label}" from favorites`
+      );
+    }
+  });
+
   // Register all commands to context
   context.subscriptions.push(
     saveCurrentLocationCommand,
@@ -218,6 +234,7 @@ export async function activate(context: vscode.ExtensionContext) {
     addCategoryCommand,
     assignCategoryCommand,
     removeCategoryCommand,
+    toggleFavoriteCommand,
   );
 
   // 🔥 Watch file thay đổi -> refresh tree

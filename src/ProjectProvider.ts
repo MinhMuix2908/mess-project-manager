@@ -8,6 +8,7 @@ interface ProjectEntry {
   path: string;
   active: boolean;
   category?: string;
+  favorite?: boolean;
 }
 
 export class ProjectItem extends vscode.TreeItem {
@@ -18,7 +19,8 @@ export class ProjectItem extends vscode.TreeItem {
     public readonly children: ProjectItem[] = [],
     public readonly active: boolean = true,
     public readonly category?: string,
-    public readonly isCategory: boolean = false
+    public readonly isCategory: boolean = false,
+    public readonly favorite: boolean = false
   ) {
     super(label, collapsibleState);
     
@@ -45,6 +47,10 @@ export class ProjectItem extends vscode.TreeItem {
       if (this.category) {
         this.description += ` [${this.category}]`;
       }
+      
+      // if (this.favorite) {
+      //   this.description += " ⭐";
+      // }
       
       this.iconPath = new vscode.ThemeIcon("folder", new vscode.ThemeColor("icon.foreground"));
     }
@@ -139,6 +145,15 @@ export class ProjectProvider implements vscode.TreeDataProvider<ProjectItem> {
     }
   }
 
+  toggleProjectFavorite(projectPath: string): void {
+    const project = this.projects.find(p => p.path === projectPath);
+    if (project) {
+      project.favorite = !project.favorite;
+      this.saveProjects();
+      this.refresh();
+    }
+  }
+
   private saveProjects(): void {
     const filePath = path.join(this.context.globalStorageUri.fsPath, "projects.json");
     const projectsData = { projects: this.projects };
@@ -221,25 +236,53 @@ export class ProjectProvider implements vscode.TreeDataProvider<ProjectItem> {
       return this.buildProjectTree(this.projects);
     }
 
-    // Group projects by category
+    // Group projects by favorite and category
+    const favoriteProjects: ProjectEntry[] = [];
     const categoryGroups: { [categoryId: string]: ProjectEntry[] } = {};
     const uncategorizedProjects: ProjectEntry[] = [];
 
     for (const project of this.projects) {
+      if (project.favorite) {
+        favoriteProjects.push(project);
+      }
+      
       if (project.category) {
         if (!categoryGroups[project.category]) {
           categoryGroups[project.category] = [];
         }
         categoryGroups[project.category].push(project);
+      // } else if (!project.favorite) {
+      //   // Only add to uncategorized if it's not a favorite
+      //   uncategorizedProjects.push(project);
+      // }
       } else {
+        // Add to uncategorized even if it's a favorite
         uncategorizedProjects.push(project);
       }
     }
 
     const result: ProjectItem[] = [];
 
-    // Add categorized projects
+    // Add favorite projects first (if any)
+    if (favoriteProjects.length > 0) {
+      const favoriteChildren = this.buildProjectTree(favoriteProjects);
+      const favoriteItem = new ProjectItem(
+        "Favorite Projects",
+        vscode.TreeItemCollapsibleState.Expanded,
+        undefined,
+        favoriteChildren,
+        true,
+        "favorites",
+        true
+      );
+      favoriteItem.iconPath = new vscode.ThemeIcon("star-full");
+      result.push(favoriteItem);
+    }
+
+    // Add categorized projects (excluding favorites already shown)
     for (const category of this.categories) {
+      if (category.id === "favorite_projects") continue; // Skip the old favorite category
+      
       const projectsInCategory = categoryGroups[category.id] || [];
       if (projectsInCategory.length > 0) {
         const categoryChildren = this.buildProjectTree(projectsInCategory);
@@ -261,7 +304,7 @@ export class ProjectProvider implements vscode.TreeDataProvider<ProjectItem> {
       }
     }
 
-    // Add uncategorized projects
+    // Add uncategorized projects (excluding favorites)
     if (uncategorizedProjects.length > 0) {
       const uncategorizedChildren = this.buildProjectTree(uncategorizedProjects);
       const uncategorizedItem = new ProjectItem(
@@ -294,11 +337,13 @@ export class ProjectProvider implements vscode.TreeDataProvider<ProjectItem> {
             __children: {}, 
             __fullPath: i === parts.length - 1 ? project.path : undefined, 
             __active: project.active,
-            __category: project.category
+            __category: project.category,
+            __favorite: project.favorite || false
           };
         } else {
           current[part].__active = project.active;
           current[part].__category = project.category;
+          current[part].__favorite = project.favorite || false;
           // nếu trùng label nhưng đây là leaf -> gán fullPath
           if (i === parts.length - 1) {
             current[part].__fullPath = project.path;
@@ -317,6 +362,7 @@ export class ProjectProvider implements vscode.TreeDataProvider<ProjectItem> {
       const children = this.convertToTreeItems(value.__children);
       const isActive = value.__active !== undefined ? value.__active : true;
       const category = value.__category;
+      const favorite = value.__favorite || false;
       
       // console.log(`Converting to TreeItem: ${name}, active: ${isActive}, fullPath: ${value.__fullPath}`);
       
@@ -327,7 +373,8 @@ export class ProjectProvider implements vscode.TreeDataProvider<ProjectItem> {
         children,
         isActive,
         category,
-        false
+        false,
+        favorite
       );
     });
   }
