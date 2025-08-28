@@ -4,6 +4,7 @@ import * as fs from "fs";
 import { ProjectProvider, ProjectItem } from "./ProjectProvider";
 import { GitProjectProvider, GitProjectItem } from "./GitProjectProvider";
 import { TerminalProvider } from "./TerminalProvider";
+import { NotesProvider, NoteItem, SheetItem, HeaderItem } from "./NotesProvider";
 
 export async function activate(context: vscode.ExtensionContext) {
   const storagePath = context.globalStorageUri.fsPath;
@@ -16,10 +17,11 @@ export async function activate(context: vscode.ExtensionContext) {
     fs.writeFileSync(configFile, JSON.stringify({ projects: [] }, null, 2));
   }
 
-  // Create three providers - regular, categorized, and git
+  // Create four providers - regular, categorized, git, and notes
   const allProjectsProvider = new ProjectProvider(context, "messProjectManagerTreeView", false);
   const categorizedProvider = new ProjectProvider(context, "messProjectManagerCategories", true);
   const gitProvider = new GitProjectProvider(context);
+  const notesProvider = new NotesProvider(context);
 
   // Register tree data providers with drag and drop support
   vscode.window.createTreeView("messProjectManagerTreeView", {
@@ -35,6 +37,10 @@ export async function activate(context: vscode.ExtensionContext) {
   vscode.window.createTreeView("messProjectManagerGit", {
     treeDataProvider: gitProvider,
     dragAndDropController: gitProvider
+  });
+  
+  vscode.window.createTreeView("messProjectManagerNotes", {
+    treeDataProvider: notesProvider
   });
 
   // Register all commands
@@ -395,6 +401,90 @@ export async function activate(context: vscode.ExtensionContext) {
     }
   });
 
+  // Notes-related commands
+
+  // 🔄 Refresh Notes Command
+  const refreshNotesCommand = vscode.commands.registerCommand("messProjectManager.refreshNotes", () => {
+    notesProvider.refresh();
+    vscode.window.showInformationMessage("🔄 Notes refreshed");
+  });
+
+  // 📋 Copy Note Content Command
+  const copyNoteContentCommand = vscode.commands.registerCommand("messProjectManager.copyNoteContent", async (noteItem: NoteItem) => {
+    if (!noteItem) return;
+
+    const note = noteItem.getNote();
+    await vscode.env.clipboard.writeText(note.content);
+    vscode.window.showInformationMessage(`📋 Copied "${note.title}" to clipboard`);
+  });
+
+  // ▶️ Run Command
+  const runCommandCommand = vscode.commands.registerCommand("messProjectManager.runCommand", async (noteItem: NoteItem) => {
+    if (!noteItem) return;
+
+    const note = noteItem.getNote();
+    if (note.type !== 'command') return;
+
+    // Get current workspace folder
+    const workspaceFolder = vscode.workspace.workspaceFolders?.[0];
+    if (!workspaceFolder) {
+      vscode.window.showErrorMessage("⚠️ No workspace folder found");
+      return;
+    }
+
+    // Create a new terminal to run the command
+    const terminal = vscode.window.createTerminal({
+      name: `Run: ${note.title}`,
+      cwd: workspaceFolder.uri.fsPath
+    });
+
+    terminal.show();
+    terminal.sendText(note.content);
+  });
+
+  // 📁 Add Sheet Command
+  const addSheetCommand = vscode.commands.registerCommand("messProjectManager.addSheet", async () => {
+    const sheetName = await vscode.window.showInputBox({
+      prompt: "Enter sheet name",
+      placeHolder: "e.g., Work Commands, Personal Notes, etc."
+    });
+
+    if (!sheetName) return;
+
+    notesProvider.addSheet(sheetName);
+  });
+
+  // 📝 Open Sheet Command
+  const openSheetCommand = vscode.commands.registerCommand("messProjectManager.openSheet", async (sheetItem: SheetItem) => {
+    if (!sheetItem) return;
+
+    const sheet = sheetItem.getSheet();
+    await notesProvider.openSheet(sheet.id);
+  });
+
+  // 🗑️ Delete Sheet Command
+  const deleteSheetCommand = vscode.commands.registerCommand("messProjectManager.deleteSheet", async (sheetItem: SheetItem) => {
+    if (!sheetItem) return;
+
+    const sheet = sheetItem.getSheet();
+    const totalItems = sheet.headers.reduce((total, header) => total + header.notes.length, 0);
+    
+    const confirmMessage = totalItems > 0 
+      ? `Are you sure you want to delete sheet "${sheet.name}"? This will delete ${totalItems} items.`
+      : `Are you sure you want to delete sheet "${sheet.name}"?`;
+
+    const confirm = await vscode.window.showWarningMessage(
+      confirmMessage,
+      "Delete",
+      "Cancel"
+    );
+
+    if (confirm === "Delete") {
+      notesProvider.deleteSheet(sheet.id);
+    }
+  });
+
+
   // Register all commands to context
   context.subscriptions.push(
     saveCurrentLocationCommand,
@@ -423,6 +513,13 @@ export async function activate(context: vscode.ExtensionContext) {
     openPowerShellCommand,
     openPowerShellAdminCommand,
     openGitBashCommand,
+    // Notes commands
+    refreshNotesCommand,
+    copyNoteContentCommand,
+    runCommandCommand,
+    addSheetCommand,
+    openSheetCommand,
+    deleteSheetCommand,
   );
 
   // 🔥 Watch file thay đổi -> refresh tree

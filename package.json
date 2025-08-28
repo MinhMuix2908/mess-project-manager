@@ -50,7 +50,7 @@
         },
         {
           "id": "messProjectManagerNotes",
-          "name": "Notes "
+          "name": "Notes and Commands"
         }
       ]
     },
@@ -174,6 +174,36 @@
         "command": "messProjectManager.openGitBash",
         "title": "Open Git Bash",
         "icon": "$(terminal-bash)"
+      },
+      {
+        "command": "messProjectManager.refreshNotes",
+        "title": "Refresh Notes",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "messProjectManager.copyNoteContent",
+        "title": "Copy Content",
+        "icon": "$(copy)"
+      },
+      {
+        "command": "messProjectManager.runCommand",
+        "title": "Run Command",
+        "icon": "$(play)"
+      },
+      {
+        "command": "messProjectManager.addSheet",
+        "title": "Add Sheet",
+        "icon": "$(new-folder)"
+      },
+      {
+        "command": "messProjectManager.openSheet",
+        "title": "Open Sheet",
+        "icon": "$(go-to-file)"
+      },
+      {
+        "command": "messProjectManager.deleteSheet",
+        "title": "Delete Sheet",
+        "icon": "$(trash)"
       }
     ],
     "menus": {
@@ -226,6 +256,16 @@
         {
           "command": "messProjectManager.cloneRepository",
           "when": "view == messProjectManagerGit",
+          "group": "navigation@2"
+        },
+        {
+          "command": "messProjectManager.addSheet",
+          "when": "view == messProjectManagerNotes",
+          "group": "navigation@1"
+        },
+        {
+          "command": "messProjectManager.refreshNotes",
+          "when": "view == messProjectManagerNotes",
           "group": "navigation@2"
         }
       ],
@@ -324,6 +364,36 @@
           "command": "messProjectManager.openIntegratedTerminal",
           "when": "(view == messProjectManagerTreeView || view == messProjectManagerCategories || view == messProjectManagerGit) && viewItem == projectItem",
           "group": "4_terminal@2"
+        },
+        {
+          "command": "messProjectManager.copyNoteContent",
+          "when": "view == messProjectManagerNotes && (viewItem == noteItem || viewItem == commandItem)",
+          "group": "inline@1"
+        },
+        {
+          "command": "messProjectManager.runCommand",
+          "when": "view == messProjectManagerNotes && viewItem == commandItem",
+          "group": "inline@2"
+        },
+        {
+          "command": "messProjectManager.copyNoteContent",
+          "when": "view == messProjectManagerNotes && (viewItem == noteItem || viewItem == commandItem)",
+          "group": "1_actions@1"
+        },
+        {
+          "command": "messProjectManager.runCommand",
+          "when": "view == messProjectManagerNotes && viewItem == commandItem",
+          "group": "1_actions@2"
+        },
+        {
+          "command": "messProjectManager.openSheet",
+          "when": "view == messProjectManagerNotes && viewItem == sheetItem",
+          "group": "inline@1"
+        },
+        {
+          "command": "messProjectManager.deleteSheet",
+          "when": "view == messProjectManagerNotes && viewItem == sheetItem",
+          "group": "inline@2"
         }
       ]
     }
