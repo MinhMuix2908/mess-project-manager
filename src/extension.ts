@@ -107,7 +107,7 @@ export async function activate(context: vscode.ExtensionContext) {
     const fullPath = projectItem.getFullPath();
     if (fullPath) {
       // console.log("Opening in new window:", projectItem.label, "at path:", fullPath);
-      vscode.commands.executeCommand("vscode.env.openExternal", vscode.Uri.file(fullPath), true);
+      vscode.commands.executeCommand("vscode.openFolder", vscode.Uri.file(fullPath), true);
     } else {
       vscode.window.showWarningMessage("No path available for this item");
     }
