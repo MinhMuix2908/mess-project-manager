@@ -3,6 +3,7 @@ import * as path from "path";
 import * as fs from "fs";
 import { exec } from "child_process";
 import { promisify } from "util";
+import { Console } from "console";
 
 const execAsync = promisify(exec);
 
@@ -223,7 +224,7 @@ export class TerminalProvider {
   private async openWindowsTerminal(workingDirectory: string, projectName: string, admin: boolean): Promise<void> {
     try {
       // Try Windows Terminal first
-      const wtCommand = `wt -d "${workingDirectory}"`;
+      const wtCommand = `wt -d "${workingDirectory.replace(/"/g, '\\"')}"`;
       await execAsync(wtCommand);
       vscode.window.showInformationMessage(`✅ Opened Windows Terminal in: ${projectName}`);
     } catch (wtError) {
@@ -238,10 +239,11 @@ export class TerminalProvider {
       
       if (admin) {
         // Open Command Prompt as Administrator
-        command = `powershell -Command "Start-Process cmd -ArgumentList '/k cd /d \\"${workingDirectory}\\"' -Verb RunAs"`;
+        command = `powershell -Command "Start-Process cmd -ArgumentList '/k cd /d \\"${workingDirectory.replace(/"/g, '\\"')}\\"' -Verb RunAs"`;
       } else {
         // Open regular Command Prompt
-        command = `start cmd /k "cd /d \\"${workingDirectory}\\""`;
+        command = `powershell -Command "Start-Process cmd -ArgumentList '/k cd /d \\"${workingDirectory.replace(/"/g, '\\"')}\\"'"`;
+        // command = `start "" cmd /k "cd /d \\"${workingDirectory.replace(/"/g, '\\"')}\\""`;  
       }
 
       await execAsync(command);
@@ -258,10 +260,10 @@ export class TerminalProvider {
       
       if (admin) {
         // Open PowerShell as Administrator
-        command = `powershell -Command "Start-Process powershell -ArgumentList '-NoExit', '-Command', 'Set-Location \\"${workingDirectory}\\"' -Verb RunAs"`;
+        command = `powershell -Command "Start-Process powershell -ArgumentList '-NoExit', '-Command', 'Set-Location \\"${workingDirectory.replace(/"/g, '\\"')}\\"' -Verb RunAs"`;
       } else {
         // Open regular PowerShell
-        command = `powershell -Command "Start-Process powershell -ArgumentList '-NoExit', '-Command', 'Set-Location \\"${workingDirectory}\\"'"`;
+        command = `powershell -Command "Start-Process powershell -ArgumentList '-NoExit', '-Command', 'Set-Location \\"${workingDirectory.replace(/"/g, '\\"')}\\"'"`;
       }
 
       await execAsync(command);
@@ -276,7 +278,9 @@ export class TerminalProvider {
     try {
       const gitBashPaths = [
         'C:\\Program Files\\Git\\bin\\bash.exe',
+        'C:\\Program Files\\Git\\bin\\sh.exe',
         'C:\\Program Files (x86)\\Git\\bin\\bash.exe',
+        'C:\\Program Files (x86)\\Git\\bin\\sh.exe',
         'C:\\Git\\bin\\bash.exe'
       ];
 
@@ -293,13 +297,13 @@ export class TerminalProvider {
         try {
           const { stdout } = await execAsync('where git');
           const gitPath = stdout.trim().split('\n')[0];
-          gitBashPath = path.join(path.dirname(gitPath), 'bash.exe');
+          gitBashPath = path.join(path.dirname(gitPath), 'sh.exe');
         } catch {
           throw new Error('Git Bash not found. Please install Git for Windows.');
         }
       }
 
-      const command = `"${gitBashPath}" --cd="${workingDirectory}"`;
+      const command = `start "" "${gitBashPath}" --cd="${workingDirectory.replace(/\\/g, '/')}"`; 
       await execAsync(command);
       vscode.window.showInformationMessage(`✅ Opened Git Bash in: ${projectName}`);
     } catch (error: any) {
