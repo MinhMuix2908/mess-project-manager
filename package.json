@@ -30,7 +30,7 @@
         {
           "id": "messProjectManager",
           "title": "Mess Project Manager",
-          "icon": "$(project)"
+          "icon": "icons/logo/logo.svg"
         }
       ]
     },
@@ -47,6 +47,10 @@
         {
           "id": "messProjectManagerGit",
           "name": "Git "
+        },
+        {
+          "id": "messProjectManagerNotes",
+          "name": "Notes "
         }
       ]
     },
