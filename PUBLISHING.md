@@ -1,6 +1,6 @@
 # Publishing Guide for VS Code Marketplace
 
-This guide covers publishing version 0.0.2 of Mess Project Manager to the VS Code Marketplace.
+This guide covers publishing version 0.3.1 of Mess Project Manager to the VS Code Marketplace.
 
 ## 🔄 Pre-Publishing Checklist
 
@@ -10,7 +10,7 @@ This guide covers publishing version 0.0.2 of Mess Project Manager to the VS Cod
 - [x] **Functionality**: All features tested (Projects, Git, Terminal, Notes)
 - [x] **Package.json**: Updated with proper metadata
 - [x] **README**: Comprehensive documentation created
-- [x] **CHANGELOG**: Version 0.0.2 changes documented
+- [x] **CHANGELOG**: Version 0.3.1 changes documented
 
 ### ✅ Marketplace Metadata
 - [x] **Description**: Enhanced marketplace description
@@ -46,13 +46,13 @@ npm run vscode:prepublish
 # Create .vsix package
 vsce package
 
-# This creates: mess-project-manager-0.0.2.vsix
+# This creates: mess-project-manager-0.3.1.vsix
 ```
 
 ### 5. Test Package Locally (Optional)
 ```bash
 # Install locally to test
-code --install-extension mess-project-manager-0.0.2.vsix
+code --install-extension mess-project-manager-0.3.1.vsix
 ```
 
 ## 🚀 Publishing to Marketplace
@@ -63,7 +63,7 @@ code --install-extension mess-project-manager-0.0.2.vsix
 vsce publish
 
 # Or specify version
-vsce publish 0.0.2
+vsce publish 0.3.1
 
 # Publish with custom message
 vsce publish -m "Major update: Notes & Commands system, Terminal integration"
@@ -74,10 +74,10 @@ vsce publish -m "Major update: Notes & Commands system, Terminal integration"
 2. Sign in with your Microsoft account
 3. Select your publisher (DaoQuangMinh)
 4. Click "New Extension" → "Visual Studio Code"
-5. Upload the `mess-project-manager-0.0.2.vsix` file
+5. Upload the `mess-project-manager-0.3.1.vsix` file
 6. Add release notes and publish
 
-## 📋 Release Information for v0.0.2
+## 📋 Release Information for v0.3.1
 
 ### Short Description (for marketplace)
 ```
@@ -86,26 +86,18 @@ Advanced project manager with Git integration, terminal shortcuts, and Notes & C
 
 ### Release Notes
 ```markdown
-## What's New in v0.0.2
+## What's New in v0.3.1
 
-### 🆕 Major Features
+### 🎯 Version Updates
+- **Stability Improvements**: Enhanced overall extension stability and performance
+- **Documentation Updates**: Updated README and publishing documentation
+- **Version Alignment**: Updated to semantic versioning 0.3.1
+
+### 📝 Previous Features (v0.0.2)
 - **Notes & Commands System**: Create and manage note sheets with commands
 - **Terminal Integration**: Multi-platform terminal support (CMD, PowerShell, Git Bash)
 - **Enhanced Git Operations**: Pull repositories and view status directly
 - **Improved UI**: Better context menus and visual indicators
-
-### 🐛 Fixes
-- Fixed Git Bash terminal execution issues
-- Resolved notes save/reopen problems
-- Eliminated need to restart VS Code after changes
-- Cleaned up command registration
-
-### 📝 Notes & Commands Format
-Create sheets with simple indentation:
-- Sheet name (no indent)
-- Headers (4 spaces)
-- Commands (8 spaces + `>`)
-- Notes (8 spaces)
 
 Full changelog: https://github.com/MinhMuix2908/mess-project-manager/blob/main/CHANGELOG.md
 ```
@@ -143,8 +135,8 @@ Full changelog: https://github.com/MinhMuix2908/mess-project-manager/blob/main/C
 ### 2. Update Repository
 ```bash
 # Tag the release
-git tag v0.0.2
-git push origin v0.0.2
+git tag v0.3.1
+git push origin v0.3.1
 
 # Create GitHub release with same notes
 ```

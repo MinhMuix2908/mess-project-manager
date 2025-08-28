@@ -203,7 +203,14 @@ npm run vscode:prepublish  # Production build
 vsce package              # Create .vsix file
 ```
 
-## 🔧 What's New in v0.0.2
+## 🔧 What's New in v0.3.1
+
+### 🎯 **Latest Updates**
+- **Version 0.3.1**: Stability improvements and documentation updates
+- **Enhanced Performance**: Optimized extension loading and refresh operations
+- **Better Documentation**: Comprehensive guides and troubleshooting sections
+
+## 🔧 Previous Updates - v0.0.2
 
 ### ✨ **Major Features Added**
 - **Notes & Commands System**: Complete sheet-based note management
@@ -273,7 +280,7 @@ See our [Contributing Guidelines](https://github.com/MinhMuix2908/mess-project-m
 
 ## 📊 Extension Info
 
-- **Version**: 0.0.2
+- **Version**: 0.3.1
 - **Publisher**: DaoQuangMinh  
 - **Repository**: [GitHub](https://github.com/MinhMuix2908/mess-project-manager)
 - **VS Code**: ^1.90.0

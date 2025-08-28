@@ -5,6 +5,14 @@ All notable changes to the Mess Project Manager extension will be documented in 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.1] - 2025-08-28
+
+### 🎯 Version Update
+- **Version Bump**: Updated extension version to 0.3.1
+- **Stability Improvements**: Enhanced overall extension stability and performance
+- **Documentation Updates**: Updated README and publishing documentation
+- **Fixed Can Not Open in New Window**: Resolved issue where command syntax are incorrect
+
 ## [0.0.2] - 2025-08-28
 
 ### ✨ Major Features Added
@@ -84,23 +92,6 @@ Sheet Name
 - **Search**: Filter projects by name or path
 - **Project Types**: Auto-detection of 15+ project types
 - **Quick Actions**: Open in new window, current window, or file explorer
-
----
-
-## 🔮 Coming Soon
-
-### Planned for v0.0.3
-- **Advanced Git Operations**: Branch switching, merge support
-- **Package Manager Integration**: npm/yarn command shortcuts  
-- **Enhanced Search**: Global search across projects and notes
-- **Project Templates**: Quick project scaffolding
-- **Workspace Integration**: Better multi-root workspace support
-
-### Future Roadmap
-- **Cloud Sync**: Sync settings across devices
-- **Team Collaboration**: Share project configurations
-- **Custom Themes**: Personalized UI themes
-- **Plugin System**: Extensible architecture for community plugins
 
 ---
 
