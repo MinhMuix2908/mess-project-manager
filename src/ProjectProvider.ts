@@ -62,9 +62,9 @@ export class ProjectItem extends vscode.TreeItem {
     // Set a notification command when users click directly on the item
     if (this.fullPath && children.length === 0) {
       this.command = {
-        command: "messProjectManager.showClickNotification",
-        title: "Click Notification",
-        arguments: [this.label],
+        command: "messProjectManager.openProjectCurrentWindow",
+        title: "Open in this window",
+        arguments: [this],
       };
     }
   }

@@ -11,6 +11,7 @@ export interface Note {
   tags: string[];
   sheetName: string;
   headerName?: string;
+  description?: string;
 }
 
 export interface Sheet {
@@ -79,8 +80,14 @@ export class NoteItem extends vscode.TreeItem {
   ) {
     super(note.title, collapsibleState);
 
-    this.tooltip = `${note.type.toUpperCase()}: ${note.content}`;
-    this.description = note.type === 'command' ? 'Command' : 'Note';
+    this.tooltip = `${note.type.toUpperCase()}: ${note.content}${note.description ? ' - ' + note.description : ''}`;
+    
+    // Show description if available, otherwise fall back to generic type
+    if (note.description && note.description.length > 0) {
+      this.description = note.description;
+    } else {
+      this.description = note.type === 'command' ? 'Command' : 'Note';
+    }
     
     // Set icons based on type
     this.iconPath = new vscode.ThemeIcon(
@@ -125,12 +132,15 @@ export class NotesProvider implements vscode.TreeDataProvider<TreeItem> {
     try {
       this.sheets = [];
       
-      // Scan the sheets folder for .txt files
+      // Always ensure Useful Tips sheet exists and is up-to-date on every startup
+      this.createOrUpdateUsefulTipsSheet();
+      
+      // Scan the sheets folder for other .txt files
       if (fs.existsSync(this.sheetsFolder)) {
         const files = fs.readdirSync(this.sheetsFolder);
         
         for (const file of files) {
-          if (file.endsWith('.txt')) {
+          if (file.endsWith('.txt') && file !== 'useful-tips.txt') { // Skip useful-tips.txt as it's already handled
             const filePath = path.join(this.sheetsFolder, file);
             try {
               const content = fs.readFileSync(filePath, 'utf8');
@@ -158,30 +168,32 @@ export class NotesProvider implements vscode.TreeDataProvider<TreeItem> {
         }
       }
       
-      // If no sheets exist, create a default one
-      if (this.sheets.length === 0) {
-        this.createDefaultSheet();
-      }
+      // Sort sheets to ensure Useful Tips is always first
+      this.sheets.sort((a, b) => {
+        if (a.id === 'useful-tips') return -1;
+        if (b.id === 'useful-tips') return 1;
+        return a.name.localeCompare(b.name);
+      });
     } catch (error) {
       console.error("Error loading sheets:", error);
-      this.createDefaultSheet();
+      this.createOrUpdateUsefulTipsSheet();
     }
   }
 
-  private createDefaultSheet(): void {
-    const id = this.generateId();
-    const defaultContent = `My Default Sheet\n\n    Getting Started\n        > echo "Welcome to Notes & Commands!"\n        This is your first note. Edit this sheet to add more content.`;
+  private createOrUpdateUsefulTipsSheet(): void {
+    const usefulTipsContent = `Useful Tips\n\n    Git Commands\n        > git status # Check repository status and changes\n        > git add . # Stage all changes for commit\n        > git add filename # Stage specific file for commit\n        > git commit -m "your message" # Commit staged changes with message\n        > git commit --amend # Modify the last commit\n        > git push # Push commits to remote repository\n        > git push -u origin branch-name # Push new branch to remote\n        > git pull # Fetch and merge changes from remote\n        > git fetch # Download changes without merging\n        > git branch -a # List all branches (local and remote)\n        > git branch -d branch-name # Delete local branch\n        > git checkout -b new-branch # Create and switch to new branch\n        > git checkout branch-name # Switch to existing branch\n        > git merge branch-name # Merge specified branch into current\n        > git rebase main # Rebase current branch onto main\n        > git log --oneline # View commit history in compact format\n        > git log --graph # View commit history with branch graph\n        > git reset --hard HEAD # Discard all local changes\n        > git reset --soft HEAD~1 # Undo last commit, keep changes staged\n        > git stash # Temporarily save current changes\n        > git stash pop # Restore previously stashed changes\n        > git diff # Show unstaged changes\n        > git diff --staged # Show staged changes\n        > git tag v1.0.0 # Create a new tag\n        > git clone repo-url # Clone remote repository\n\n    NPM/Yarn Commands\n        > npm install # Install all dependencies from package.json\n        > npm install package-name # Install specific package\n        > npm install -g package-name # Install package globally\n        > npm install --save-dev package-name # Install as dev dependency\n        > npm uninstall package-name # Remove package\n        > npm update # Update all packages to latest versions\n        > npm run start # Start the application\n        > npm run build # Build the project for production\n        > npm run test # Run test suite\n        > npm run dev # Start development server\n        > npm run lint # Run linting checks\n        > npm audit # Check for security vulnerabilities\n        > npm audit fix # Fix security vulnerabilities automatically\n        > npm list # Show installed packages tree\n        > npm outdated # Check for outdated packages\n        > yarn install # Install dependencies using Yarn\n        > yarn add package-name # Add package with Yarn\n        > yarn remove package-name # Remove package with Yarn\n        > yarn start # Start application with Yarn\n        > yarn build # Build project with Yarn\n        > yarn test # Run tests with Yarn\n        > npx command # Run package without installing globally\n\n    Docker Commands\n        > docker ps # List running containers\n        > docker ps -a # List all containers (running and stopped)\n        > docker images # List all Docker images\n        > docker build -t image-name . # Build image from Dockerfile\n        > docker run -d -p 8080:80 image-name # Run container in background\n        > docker run -it image-name bash # Run container interactively\n        > docker stop container-name # Stop running container\n        > docker start container-name # Start stopped container\n        > docker restart container-name # Restart container\n        > docker rm container-name # Remove container\n        > docker rmi image-name # Remove Docker image\n        > docker logs container-name # View container logs\n        > docker logs -f container-name # Follow container logs in real-time\n        > docker exec -it container-name bash # Execute command in running container\n        > docker-compose up # Start services defined in docker-compose.yml\n        > docker-compose up -d # Start services in background\n        > docker-compose down # Stop and remove all services\n        > docker-compose build # Build all services\n        > docker-compose logs # View logs from all services\n        > docker system prune # Remove unused containers, images, networks\n\n    System Commands (Linux/Mac)\n        > ls -la # List all files with detailed information\n        > ls -lh # List files with human-readable file sizes\n        > cd .. # Go to parent directory\n        > cd ~ # Go to home directory\n        > pwd # Show current directory path\n        > mkdir folder-name # Create new directory\n        > mkdir -p path/to/folder # Create nested directories\n        > rmdir folder-name # Remove empty directory\n        > rm -rf folder-name # Remove directory and all contents\n        > cp file1.txt file2.txt # Copy file\n        > cp -r folder1 folder2 # Copy directory recursively\n        > mv oldname.txt newname.txt # Move/rename file\n        > chmod +x script.sh # Make file executable\n        > chmod 755 file.txt # Set specific permissions\n        > chown user:group file.txt # Change file ownership\n        > find . -name "*.txt" # Find files by name pattern\n        > grep "search-term" file.txt # Search for text in file\n        > grep -r "search-term" . # Search recursively in directory\n        > ps aux # Show running processes\n        > top # Show running processes with resource usage\n        > htop # Enhanced process viewer (if installed)\n        > kill -9 process-id # Force kill process by ID\n        > killall process-name # Kill all processes by name\n        > df -h # Show disk usage\n        > du -sh folder # Show directory size\n        > free -h # Show memory usage\n        > which command # Show path to command\n        > wget url # Download file from URL\n        > curl -O url # Download file with curl\n        > tar -czf archive.tar.gz folder/ # Create compressed archive\n        > tar -xzf archive.tar.gz # Extract compressed archive\n        > ssh user@server # Connect to remote server via SSH\n        > scp file.txt user@server:/path # Copy file to remote server\n\n    Windows Commands\n        > dir # List directory contents\n        > cd .. # Go to parent directory\n        > cd \\ # Go to root directory\n        > md folder-name # Create directory\n        > rd /s folder-name # Remove directory and contents\n        > copy file1.txt file2.txt # Copy file\n        > move oldname.txt newname.txt # Move/rename file\n        > del file.txt # Delete file\n        > type file.txt # Display file contents\n        > find "search-term" file.txt # Search for text in file\n        > tasklist # Show running processes\n        > taskkill /pid process-id # Kill process by ID\n        > taskkill /im process-name.exe # Kill process by name\n        > ipconfig # Show network configuration\n        > ping google.com # Test network connectivity\n        > netstat -an # Show network connections\n\n    Python Commands\n        > python --version # Check Python version\n        > python script.py # Run Python script\n        > python -m pip install package # Install Python package\n        > python -m pip list # List installed packages\n        > python -m pip freeze > requirements.txt # Export dependencies\n        > python -m pip install -r requirements.txt # Install from requirements\n        > python -m venv env # Create virtual environment\n        > source env/bin/activate # Activate virtual environment (Linux/Mac)\n        > env\\Scripts\\activate # Activate virtual environment (Windows)\n        > deactivate # Deactivate virtual environment\n        > python -m pytest # Run tests with pytest\n        > python -m http.server 8000 # Start simple HTTP server\n\n    Database Commands\n        > psql -U username -d database # Connect to PostgreSQL\n        > mysql -u username -p database # Connect to MySQL\n        > mongosh # Connect to MongoDB shell\n        > redis-cli # Connect to Redis CLI\n        > sqlite3 database.db # Open SQLite database\n\n    Development Notes\n        Keep dependencies up to date regularly # Security and performance benefits\n        Use semantic versioning (major.minor.patch) # Clear version communication\n        Always test before pushing to main branch # Prevent breaking production\n        Commit frequently with meaningful messages # Better project history\n        Document your code and APIs thoroughly # Help future developers\n        Use environment variables for configuration # Keep secrets secure\n        Follow coding standards and best practices # Maintain code quality\n        Backup your work regularly # Prevent data loss\n        Use version control for all projects # Track changes and collaborate\n        Review code before merging # Catch bugs and improve quality\n        Set up CI/CD pipelines # Automate testing and deployment\n        Monitor application performance # Identify issues early\n        Use linting tools and formatters # Consistent code style\n        Write unit and integration tests # Ensure code reliability\n        Keep production and development environments separate # Avoid conflicts\n\n    Useful Links\n        GitHub documentation: https://docs.github.com # Git and GitHub help\n        NPM registry: https://www.npmjs.com # JavaScript package repository\n        Docker Hub: https://hub.docker.com # Container image registry\n        Stack Overflow: https://stackoverflow.com # Programming Q&A community\n        MDN Web Docs: https://developer.mozilla.org # Web development reference\n        VS Code Marketplace: https://marketplace.visualstudio.com # Editor extensions\n        Can I Use: https://caniuse.com # Browser compatibility checker\n        Regex101: https://regex101.com # Regular expression tester\n        JSON Formatter: https://jsonformatter.org # JSON validation and formatting\n        Base64 Encode/Decode: https://www.base64encode.org # Base64 utilities`;
     
-    const filePath = path.join(this.sheetsFolder, `${id}.txt`);
+    const filePath = path.join(this.sheetsFolder, "useful-tips.txt");
     
     try {
-      fs.writeFileSync(filePath, defaultContent, 'utf8');
+      // Always overwrite the Useful Tips sheet with default content
+      fs.writeFileSync(filePath, usefulTipsContent, 'utf8');
       
       const sheet: Sheet = {
-        name: "My Default Sheet",
-        id: id,
+        name: "Useful Tips",
+        id: "useful-tips",
         filePath: filePath,
-        content: defaultContent,
+        content: usefulTipsContent,
         headers: []
       };
       
@@ -189,10 +201,22 @@ export class NotesProvider implements vscode.TreeDataProvider<TreeItem> {
       sheet.headers = this.parseSheetContent(sheet.content);
       this.updateSheetNameInNotes(sheet);
       
-      this.sheets.push(sheet);
+      // Insert at beginning to ensure it's always at the top
+      const existingIndex = this.sheets.findIndex(s => s.id === "useful-tips");
+      if (existingIndex !== -1) {
+        this.sheets[existingIndex] = sheet;
+      } else {
+        this.sheets.unshift(sheet);
+      }
     } catch (error) {
-      console.error('Error creating default sheet:', error);
+      console.error('Error creating/updating Useful Tips sheet:', error);
     }
+  }
+
+  private createDefaultSheet(): void {
+    // This method is now only called if no sheets exist at all
+    // It will create the Useful Tips sheet
+    this.createOrUpdateUsefulTipsSheet();
   }
 
   refresh(): void {
@@ -466,7 +490,16 @@ export class NotesProvider implements vscode.TreeDataProvider<TreeItem> {
       } else if (indentLevel === 2 && currentHeader) {
         // Note/Command level (2 indents)
         const isCommand = trimmedLine.startsWith('>');
-        const content = isCommand ? trimmedLine.substring(1).trim() : trimmedLine;
+        let content = isCommand ? trimmedLine.substring(1).trim() : trimmedLine;
+        let description = '';
+        
+        // Check for # separator to extract description
+        const hashIndex = content.indexOf(' #');
+        if (hashIndex !== -1) {
+          description = content.substring(hashIndex + 2).trim();
+          content = content.substring(0, hashIndex).trim();
+        }
+        
         const type = isCommand ? 'command' : 'note';
 
         const note: Note = {
@@ -477,7 +510,8 @@ export class NotesProvider implements vscode.TreeDataProvider<TreeItem> {
           createdAt: new Date().toISOString(),
           tags: [],
           sheetName: '', // Will be set by caller
-          headerName: currentHeader.name
+          headerName: currentHeader.name,
+          description: description // Add description field
         };
 
         currentHeader.notes.push(note);

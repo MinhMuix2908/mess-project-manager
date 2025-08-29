@@ -29,13 +29,14 @@ A comprehensive Visual Studio Code extension for developers who juggle multiple 
 - **Smart Menu**: Platform-aware terminal selection (Windows/macOS/Linux)
 - **Quick Launch**: Right-click any project to open terminal in its directory
 
-### 📝 **Notes & Commands System** *(New in v0.0.2)*
+### 📝 **Notes & Commands System** *(Enhanced in v0.3.2)*
+- **Useful Tips Sheet**: 100+ ready-to-use commands for Git, NPM, Docker, Python, and more
+- **Smart Descriptions**: Commands show helpful descriptions using `#` separator format
+- **Auto-Refresh**: Tips sheet updates automatically with latest commands on startup
 - **Sheet-Based Organization**: Create multiple note sheets for different contexts
 - **Command Management**: Store and run frequently used commands with one click
-- **Hierarchical Structure**: Organize with headers and nested items
 - **Quick Copy & Run**: Copy commands to clipboard or execute directly
-- **File-Based Storage**: Simple `.txt` files with auto-generated IDs
-- **Live Editing**: Edit sheets directly in VS Code with automatic parsing
+- **Educational**: Perfect for learning new tools or onboarding developers
 
 ## 📦 Installation
 
@@ -83,18 +84,20 @@ vsce package
 - **Quick Terminal**: Click terminal icon for integrated terminal
 - **Admin Access**: Available for Windows CMD and PowerShell
 
-### 5. Notes & Commands *(New!)*
-- **Create Sheet**: Click ➕ in Notes view to create a new sheet
+### 5. Notes & Commands *(Enhanced in v0.3.2!)*
+- **Instant Commands**: Access 100+ pre-loaded commands in the "Useful Tips" sheet
+- **Smart Format**: Commands with descriptions using `# description` format
+- **Create Sheets**: Click ➕ in Notes view to create custom sheets
 - **Edit Structure**: Open any sheet to edit using this format:
   ```
   Sheet Name
   
       Header Name
-          > command to run
-          regular note text
-          > another command
+          > git status # Check repository status and changes
+          > npm install # Install all dependencies from package.json
+          Regular note text without description
   ```
-- **Copy & Run**: Right-click notes to copy or run commands directly
+- **Copy & Run**: Right-click notes to copy or execute commands directly
 
 ## 📋 Notes & Commands Format
 
@@ -104,23 +107,24 @@ The Notes system uses a simple indentation-based format:
 My Development Sheet
 
     Git Commands
-        > git status
-        > git add .
-        > git commit -m "Update"
+        > git status # Check repository status and changes
+        > git add . # Stage all changes for commit
+        > git commit -m "Update" # Commit staged changes with message
         Remember to check staging area first
         
     Node.js Commands  
-        > npm install
-        > npm run dev
-        > npm run build
+        > npm install # Install all dependencies from package.json
+        > npm run dev # Start development server
+        > npm run build # Build the project for production
         Use --force flag if needed
 ```
 
 **Rules:**
 - **Sheet Name**: First line (no indentation)
-- **Headers**: 4 spaces indentation
-- **Commands**: 8 spaces + `>` prefix
+- **Headers**: 4 spaces indentation  
+- **Commands**: 8 spaces + `>` prefix + optional `# description`
 - **Notes**: 8 spaces (no `>` prefix)
+- **Descriptions**: Use `# text` at end of commands for helpful explanations
 
 ## ⚙️ Configuration
 
@@ -203,9 +207,25 @@ npm run vscode:prepublish  # Production build
 vsce package              # Create .vsix file
 ```
 
-## 🔧 What's New in v0.3.1
+## 🔧 What's New in v0.3.2
 
-### 🎯 **Latest Updates**
+### 🚀 **Latest Updates**
+- **Enhanced Useful Tips**: 100+ commands across Git, NPM/Yarn, Docker, Python, databases, and system operations
+- **Smart Descriptions**: Commands now show helpful descriptions instead of generic "Command/Note" labels
+- **Auto-Refresh Tips**: Useful Tips sheet automatically updates with latest content on every startup
+- **Fixed Extension Icon**: Proper marketplace icon display for better discoverability
+- **Improved Click Behavior**: ProjectItem onClick now properly opens projects in current window
+
+### 📚 **New Command Categories**
+- **Git Operations**: 25+ essential git commands with clear explanations
+- **Development Tools**: NPM/Yarn, Docker, Python virtual environments
+- **System Commands**: File operations for both Linux/Mac and Windows
+- **Database Connections**: PostgreSQL, MySQL, MongoDB, Redis, SQLite
+- **Best Practices**: Development notes and useful resource links
+
+## 🔧 Previous Updates - v0.3.1
+
+### 🎯 **Version 0.3.1**
 - **Version 0.3.1**: Stability improvements and documentation updates
 - **Enhanced Performance**: Optimized extension loading and refresh operations
 - **Better Documentation**: Comprehensive guides and troubleshooting sections
@@ -280,7 +300,7 @@ See our [Contributing Guidelines](https://github.com/MinhMuix2908/mess-project-m
 
 ## 📊 Extension Info
 
-- **Version**: 0.3.1
+- **Version**: 0.3.2
 - **Publisher**: DaoQuangMinh  
 - **Repository**: [GitHub](https://github.com/MinhMuix2908/mess-project-manager)
 - **VS Code**: ^1.90.0

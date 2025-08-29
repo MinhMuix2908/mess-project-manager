@@ -2,13 +2,13 @@
   "name": "mess-project-manager",
   "displayName": "Mess Project Manager",
   "description": "Advanced project manager with Git integration, terminal shortcuts, and Notes & Commands system. Organize multiple projects with categories, favorites, and drag-and-drop functionality.",
+  "icon": "icons/logo/logo.png",
   "publisher": "DaoQuangMinh",
-  "details":"sd",
   "repository": {
     "type": "git",
     "url": "https://github.com/MinhMuix2908/mess-project-manager.git"
   },
-  "version": "0.3.1",
+  "version": "0.3.2",
   "engines": {
     "vscode": "^1.90.0"
   },
@@ -51,7 +51,7 @@
         {
           "id": "messProjectManager",
           "title": "Mess Project Manager",
-          "icon": "icons/logo/logo.svg"
+          "icon": "icons/logo/logo.png"
         }
       ]
     },
